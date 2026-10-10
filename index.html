@@ -1,0 +1,511 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#16A34A">
+  <meta name="description" content="Project Hub - pusat pengelolaan proyek">
+  <title>Project Hub</title>
+  <link rel="manifest" href="./manifest.json">
+  <style>
+    :root {
+      --bg: #F7F9FC;
+      --green: #16A34A;
+      --soft: #E8F5E9;
+      --text: #1F2937;
+      --muted: #6B7280;
+      --border: #E5E7EB;
+      --surface: #FFFFFF;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: system-ui, Arial, sans-serif;
+      color: var(--text);
+      background: var(--bg);
+    }
+
+    button, input, select, textarea { font: inherit; }
+    button { cursor: pointer; }
+
+    .sidebar {
+      position: fixed;
+      inset: 0 auto 0 0;
+      width: 230px;
+      padding: 22px 14px;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 0 8px 28px;
+      font-size: 19px;
+      font-weight: 750;
+    }
+
+    .brand-icon {
+      display: grid;
+      place-items: center;
+      width: 38px;
+      height: 38px;
+      color: white;
+      background: var(--green);
+      border-radius: 11px;
+    }
+
+    .nav-label {
+      padding: 8px 12px;
+      color: var(--muted);
+      font-size: 11px;
+      letter-spacing: 1px;
+    }
+
+    .nav-item {
+      display: block;
+      width: 100%;
+      padding: 12px;
+      margin: 3px 0;
+      text-align: left;
+      color: var(--muted);
+      background: transparent;
+      border: 0;
+      border-radius: 9px;
+    }
+
+    .nav-item.active {
+      color: #15803D;
+      background: var(--soft);
+      font-weight: 650;
+    }
+
+    main {
+      margin-left: 230px;
+      padding: 22px 28px 40px;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 30px;
+    }
+
+    .workspace {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .avatar {
+      display: grid;
+      place-items: center;
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: var(--soft);
+      color: #15803D;
+      font-weight: bold;
+    }
+
+    h1 { margin: 0 0 8px; font-size: 25px; }
+    h2 { margin: 0; font-size: 17px; }
+
+    .subtitle {
+      margin: 0 0 24px;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-bottom: 25px;
+    }
+
+    .card {
+      min-width: 0;
+      padding: 18px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 13px;
+    }
+
+    .stat-label { color: var(--muted); font-size: 13px; }
+    .stat-value { margin-top: 12px; font-size: 27px; font-weight: 750; }
+
+    .section-heading {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .primary-btn {
+      padding: 10px 14px;
+      color: white;
+      background: var(--green);
+      border: 0;
+      border-radius: 9px;
+    }
+
+    .secondary-btn {
+      padding: 9px 12px;
+      color: var(--text);
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+    }
+
+    .project {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 15px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .project:last-child { border-bottom: 0; }
+    .project-name { font-weight: 650; overflow-wrap: anywhere; }
+    .project-code { margin-top: 5px; color: var(--muted); font-size: 12px; }
+
+    .status {
+      padding: 6px 9px;
+      border-radius: 20px;
+      background: var(--soft);
+      color: #15803D;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .muted { color: var(--muted); font-size: 13px; }
+    .empty { padding: 28px 10px; text-align: center; color: var(--muted); }
+
+    .form-area { display: none; margin-bottom: 20px; }
+    .form-area.open { display: block; }
+
+    label { display: block; margin: 12px 0 6px; font-size: 13px; }
+
+    input, select {
+      width: 100%;
+      padding: 11px;
+      color: var(--text);
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+    }
+
+    .form-actions { display: flex; gap: 8px; margin-top: 14px; }
+
+    #message { margin: 12px 0; font-size: 13px; }
+    .mobile-brand, .bottom-nav { display: none; }
+
+    @media (max-width: 700px) {
+      .sidebar { display: none; }
+      main { margin: 0; padding: 16px 14px 90px; }
+      .mobile-brand { display: block; font-size: 19px; font-weight: 750; }
+      header { margin-bottom: 25px; }
+      .workspace { font-size: 11px; }
+      h1 { font-size: 22px; }
+      .stats { grid-template-columns: 1fr; gap: 9px; }
+      .card { padding: 15px; }
+      .bottom-nav {
+        position: fixed;
+        inset: auto 0 0;
+        z-index: 10;
+        display: flex;
+        justify-content: space-around;
+        padding: 8px 2px;
+        background: white;
+        border-top: 1px solid var(--border);
+      }
+      .bottom-nav button {
+        max-width: 20%;
+        padding: 5px 2px;
+        border: 0;
+        background: transparent;
+        color: var(--muted);
+        font-size: 10px;
+      }
+      .bottom-nav button.active { color: var(--green); font-weight: bold; }
+    }
+  </style>
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="brand"><span class="brand-icon">P</span>Project Hub</div>
+    <div class="nav-label">MENU UTAMA</div>
+    <nav id="sideNav"></nav>
+  </aside>
+
+  <main>
+    <header>
+      <div>
+        <div class="mobile-brand">Project Hub</div>
+        <div class="workspace">Workspace: Ruang Kerja Saya</div>
+      </div>
+      <div class="avatar" title="Profil">U</div>
+    </header>
+
+    <section id="content"></section>
+    <p id="message" role="status" aria-live="polite"></p>
+  </main>
+
+  <nav id="bottomNav" class="bottom-nav"></nav>
+
+  <script>
+    const DB_NAME = "ProjectHubLocal";
+    const DB_VERSION = 1;
+    const STORE = "projects";
+
+    const menus = [
+      ["Beranda", "⌂"],
+      ["Data Proyek", "▦"],
+      ["Daftar Fitur", "◈"],
+      ["Catatan Umum", "▤"],
+      ["Riwayat Revisi", "↻"],
+      ["Aktivitas", "◷"],
+      ["Pengguna", "♙"],
+      ["Pengaturan", "⚙"]
+    ];
+
+    let currentPage = "Beranda";
+    let db;
+
+    function openDatabase() {
+      return new Promise((resolve, reject) => {
+        if (!("indexedDB" in window)) {
+          reject(new Error("Browser ini tidak mendukung IndexedDB."));
+          return;
+        }
+
+        const request = indexedDB.open(DB_NAME, DB_VERSION);
+
+        request.onupgradeneeded = () => {
+          const database = request.result;
+          if (!database.objectStoreNames.contains(STORE)) {
+            const store = database.createObjectStore(STORE, {
+              keyPath: "id",
+              autoIncrement: true
+            });
+            store.createIndex("code", "code", { unique: true });
+            store.createIndex("updatedAt", "updatedAt");
+          }
+        };
+
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+      });
+    }
+
+    function getProjects() {
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE, "readonly");
+        const request = tx.objectStore(STORE).getAll();
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+      });
+    }
+
+    function saveProject(project) {
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE, "readwrite");
+        tx.objectStore(STORE).add(project);
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+        tx.onabort = () => reject(tx.error);
+      });
+    }
+
+    function showMessage(text) {
+      document.getElementById("message").textContent = text;
+    }
+
+    function escapeHTML(value) {
+      return String(value).replace(/[&<>"']/g, char => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+      })[char]);
+    }
+
+    function renderMenus() {
+      const makeButtons = (items) => items.map(([name, icon]) =>
+        `<button class="nav-item ${name === currentPage ? "active" : ""}"
+          data-page="${name}">${icon} &nbsp; ${name}</button>`
+      ).join("");
+
+      document.getElementById("sideNav").innerHTML = makeButtons(menus);
+      document.getElementById("bottomNav").innerHTML =
+        menus.slice(0, 5).map(([name, icon]) =>
+          `<button class="${name === currentPage ? "active" : ""}"
+            data-page="${name}">${icon}<br>${name}</button>`
+        ).join("");
+
+      document.querySelectorAll("[data-page]").forEach(button => {
+        button.addEventListener("click", () => {
+          currentPage = button.dataset.page;
+          renderMenus();
+          renderContent();
+        });
+      });
+    }
+
+    async function renderContent() {
+      const content = document.getElementById("content");
+
+      if (currentPage === "Beranda" || currentPage === "Data Proyek") {
+        const projects = await getProjects();
+        const isHome = currentPage === "Beranda";
+
+        content.innerHTML = `
+          <h1>${isHome ? "Beranda" : "Data Proyek"}</h1>
+          <p class="subtitle">${
+            isHome
+              ? "Ringkasan proyek dalam workspace ini."
+              : "Kelola proyek yang tersimpan di perangkat ini."
+          }</p>
+          ${isHome ? `
+            <div class="stats">
+              <div class="card">
+                <div class="stat-label">Total Proyek Lokal</div>
+                <div class="stat-value">${projects.length}</div>
+              </div>
+              <div class="card">
+                <div class="stat-label">Proyek Aktif</div>
+                <div class="stat-value">${
+                  projects.filter(p => p.status === "Aktif").length
+                }</div>
+              </div>
+              <div class="card">
+                <div class="stat-label">Penyimpanan</div>
+                <div class="stat-value" style="font-size:18px">HP ini</div>
+              </div>
+            </div>` : ""}
+          <div class="section-heading">
+            <h2>${isHome ? "Proyek Terbaru" : "Semua Proyek"}</h2>
+            <button class="primary-btn" id="showForm">+ Proyek Baru</button>
+          </div>
+          <div class="card form-area" id="formArea">
+            <h2>Tambah Proyek</h2>
+            <form id="projectForm">
+              <label for="projectName">Nama proyek *</label>
+              <input id="projectName" maxlength="100" required
+                placeholder="Contoh: Project Hub">
+              <label for="projectDescription">Deskripsi</label>
+              <input id="projectDescription" maxlength="500"
+                placeholder="Tujuan singkat proyek">
+              <label for="projectStatus">Status awal</label>
+              <select id="projectStatus">
+                <option>Perencanaan</option>
+                <option>Aktif</option>
+              </select>
+              <div class="form-actions">
+                <button class="primary-btn" type="submit">Simpan Lokal</button>
+                <button class="secondary-btn" type="button" id="cancelForm">
+                  Batal
+                </button>
+              </div>
+            </form>
+          </div>
+          <div class="card" id="projectList"></div>
+          <p class="muted">Data tahap ini hanya tersimpan di browser HP ini,
+          belum tersinkron ke pengguna lain.</p>
+        `;
+
+        document.getElementById("projectList").innerHTML = projects.length
+          ? projects
+              .sort((a, b) => b.updatedAt - a.updatedAt)
+              .map(p => `
+                <div class="project">
+                  <div>
+                    <div class="project-name">${escapeHTML(p.name)}</div>
+                    <div class="project-code">${escapeHTML(p.code)} ·
+                      ${escapeHTML(p.description || "Tanpa deskripsi")}</div>
+                  </div>
+                  <span class="status">${escapeHTML(p.status)}</span>
+                </div>
+              `).join("")
+          : `<div class="empty">Belum ada proyek. Tekan + Proyek Baru untuk memulai.</div>`;
+
+        document.getElementById("showForm").onclick = () => {
+          document.getElementById("formArea").classList.add("open");
+          document.getElementById("projectName").focus();
+        };
+
+        document.getElementById("cancelForm").onclick = () => {
+          document.getElementById("formArea").classList.remove("open");
+        };
+
+        document.getElementById("projectForm").onsubmit = async event => {
+          event.preventDefault();
+
+          const name = document.getElementById("projectName").value.trim();
+          if (!name) return;
+
+          const existing = await getProjects();
+          const now = Date.now();
+          const project = {
+            code: "PRJ-" + String(now),
+            name,
+            description: document.getElementById("projectDescription").value.trim(),
+            status: document.getElementById("projectStatus").value,
+            createdAt: now,
+            updatedAt: now,
+            syncStatus: "pending"
+          };
+
+          try {
+            await saveProject(project);
+            showMessage("Proyek berhasil disimpan secara lokal di HP ini.");
+            await renderContent();
+          } catch (error) {
+            showMessage("Gagal menyimpan proyek: " + error.message);
+          }
+        };
+
+        return;
+      }
+
+      content.innerHTML = `
+        <h1>${escapeHTML(currentPage)}</h1>
+        <p class="subtitle">Bagian ini akan kita bangun bertahap.</p>
+        <div class="card empty">
+          Fitur ini belum diaktifkan. Database online dan autentikasi
+          belum terhubung.
+        </div>
+      `;
+    }
+
+    async function startApp() {
+      try {
+        db = await openDatabase();
+        renderMenus();
+        await renderContent();
+
+        if ("serviceWorker" in navigator &&
+            (location.protocol === "https:" ||
+             location.hostname === "localhost")) {
+          navigator.serviceWorker.register("./sw.js")
+            .catch(error => console.warn("Service worker:", error));
+        }
+      } catch (error) {
+        showMessage("Database lokal belum bisa dibuka: " + error.message);
+      }
+    }
+
+    startApp();
+  </script>
+</body>
+</html>

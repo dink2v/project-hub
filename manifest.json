@@ -1,0 +1,21 @@
+
+{
+  "id": "./",
+  "name": "Project Hub",
+  "short_name": "Project Hub",
+  "description": "Pusat pengelolaan proyek dan dokumentasi",
+  "lang": "id",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#F7F9FC",
+  "theme_color": "#16A34A",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
