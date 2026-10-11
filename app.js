@@ -604,15 +604,18 @@ async function createWorkspace() {
     currentUser = authenticatedUser;
     const userId = authenticatedUser.id;
 
-    // Buat workspace.
-    const { data: workspace, error: workspaceError } = await supabase
+    // Buat ID di client agar tidak perlu meminta RETURNING sebelum menjadi anggota.
+    const workspaceId = crypto.randomUUID();
+
+    // INSERT tanpa SELECT: policy select_member belum mengizinkan pembuat
+    // membaca workspace sebelum baris Owner berhasil dibuat.
+    const { error: workspaceError } = await supabase
       .from("workspaces")
       .insert({
+        id: workspaceId,
         name,
         created_by: userId
-      })
-      .select("id, name")
-      .single();
+      });
 
     if (workspaceError) throw workspaceError;
 
@@ -620,7 +623,7 @@ async function createWorkspace() {
     const { error: memberError } = await supabase
       .from("workspace_members")
       .insert({
-        workspace_id: workspace.id,
+        workspace_id: workspaceId,
         user_id: userId,
         role: "Owner"
       });
@@ -634,6 +637,15 @@ async function createWorkspace() {
       await loadWorkspaces();
       return;
     }
+
+    // Setelah menjadi anggota, ambil data workspace melalui policy SELECT.
+    const { data: workspace, error: selectError } = await supabase
+      .from("workspaces")
+      .select("id, name")
+      .eq("id", workspaceId)
+      .single();
+
+    if (selectError) throw selectError;
 
     input.value = "";
     showToast("Workspace berhasil dibuat.", "success");
