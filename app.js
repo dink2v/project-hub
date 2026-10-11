@@ -374,6 +374,7 @@ $("forgot-password-button")?.addEventListener(
 
 $("workspace-logout-button")?.addEventListener("click", handleLogout);
 $("logout-button")?.addEventListener("click", handleLogout);
+$("mobile-logout-button")?.addEventListener("click", handleLogout);
 $("settings-logout-button")?.addEventListener("click", handleLogout);
 
 // Periksa sesi yang masih aktif saat halaman dibuka.
