@@ -1563,7 +1563,7 @@ function renderDashboard() {
             </span>
           </div>
         `).join("")
-      : "<p>Belum ada proyek. Buat proyek pertamamu untuk memulai.";
+       : "<p>Belum ada proyek. Buat proyek pertamamu untuk memulai.</p>";
   }
 }
 
