@@ -1676,3 +1676,79 @@ body { overflow-x: hidden; }
   .stat-card span { min-height: 30px; }
   .stat-card strong { font-size: 22px; }
 }
+
+
+/* RESPONSIVE POLISH PASS — laptop and phone */
+html { min-width: 320px; scroll-behavior: smooth; }
+body { min-width: 320px; }
+button, input, select, textarea { font: inherit; }
+button { max-width: 100%; overflow-wrap: anywhere; }
+input, select, textarea { min-width: 0; max-width: 100%; }
+.page, .page-content, .main-area, .content-card, .dashboard-card,
+.settings-card, .modal-dialog, .project-detail-content { min-width: 0; }
+.page-content { margin-right: auto; margin-left: auto; }
+.page-intro h1, .page-intro h2, .section-heading h2,
+.card-title, .project-card h3 { overflow-wrap: anywhere; }
+.section-heading { flex-wrap: wrap; }
+.section-heading > * { min-width: 0; }
+.project-card-header, .project-card-footer, .detail-header,
+.dashboard-workspace-actions, .workspace-option, .workspace-info {
+  min-width: 0; max-width: 100%; overflow-wrap: anywhere;
+}
+.project-card-footer { flex-wrap: wrap; gap: 10px; }
+.project-card-footer > * { min-width: 0; }
+.form-group { min-width: 0; }
+.form-group label { display: block; overflow-wrap: anywhere; }
+.form-group input, .form-group select, .form-group textarea,
+.auth-card input, .modal-dialog input, .modal-dialog select,
+.modal-dialog textarea { width: 100%; }
+textarea { resize: vertical; }
+.workspace-list { min-width: 0; }
+.workspace-option { gap: 12px; }
+.modal-backdrop { padding: 20px; overflow-y: auto; }
+.modal-dialog { width: min(100%, 620px); max-width: 100%; max-height: calc(100dvh - 40px); overflow-y: auto; }
+.modal-header { gap: 12px; }
+.modal-header > * { min-width: 0; }
+.empty-state { max-width: 100%; overflow-wrap: anywhere; }
+table { border-collapse: separate; border-spacing: 0; }
+th, td { overflow-wrap: anywhere; }
+.content-card:has(table) { max-width: 100%; }
+button:focus-visible, a:focus-visible, input:focus-visible,
+select:focus-visible, textarea:focus-visible {
+  outline: 3px solid rgba(164,119,91,.45);
+  outline-offset: 2px;
+}
+
+@media (min-width: 1200px) {
+  .page-content { padding-right: 32px; padding-left: 32px; }
+  .stats-grid { gap: 18px; }
+  .content-card, .dashboard-card { padding: 24px; }
+}
+@media (min-width: 701px) {
+  .page-content { width: 100%; }
+  .modal-dialog { margin: auto; }
+}
+@media (max-width: 700px) {
+  .modal-backdrop { align-items: flex-start; padding: 12px; }
+  .modal-dialog { width: 100%; max-height: calc(100dvh - 24px); padding: 18px; border-radius: 16px; }
+  .modal-header { align-items: flex-start; }
+  .modal-header h2, .modal-header h3 { font-size: 18px; }
+  .form-actions, .modal-actions, .modal-footer, .auth-actions {
+    display: flex; flex-wrap: wrap; gap: 10px;
+  }
+  .form-actions > button, .modal-actions > button, .modal-footer > button {
+    flex: 1 1 130px;
+  }
+  .workspace-list { gap: 10px; }
+  .workspace-option { align-items: flex-start; padding: 14px; }
+  .detail-header { align-items: flex-start; flex-wrap: wrap; gap: 12px; }
+  .detail-header > * { min-width: 0; }
+  .project-card-header { align-items: flex-start; gap: 10px; }
+  .project-card-header h3 { font-size: 16px; line-height: 1.4; }
+  .page-intro h1, .page-intro h2 { line-height: 1.25; }
+  .content-card:has(table) { padding: 12px; }
+  table { min-width: 520px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}
