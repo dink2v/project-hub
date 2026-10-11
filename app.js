@@ -803,8 +803,50 @@ async function openWorkspace(workspace) {
     $("user-avatar").textContent = name.charAt(0).toUpperCase();
   }
 
-  const panel = $("dashboard-workspace-panel");
-  if (panel) panel.classList.add("hidden");
+  const panel = ensureDashboardWorkspacePanel();
+  if (panel) panel.classList.remove("hidden");
+
+  const dashboardList = $("dashboard-workspace-list");
+  if (dashboardList) {
+    dashboardList.replaceChildren();
+    const currentItem = document.createElement("div");
+    currentItem.className = "workspace-option";
+    const mark = document.createElement("div");
+    mark.className = "brand-mark";
+    mark.style.width = "40px";
+    mark.style.height = "40px";
+    mark.textContent = "W";
+    const info = document.createElement("div");
+    info.className = "workspace-info";
+    const name = document.createElement("strong");
+    name.textContent = workspace.name || "Workspace";
+    const role = document.createElement("span");
+    role.className = "muted small";
+    role.textContent = workspace.role || "Anggota";
+    info.append(name, role);
+    currentItem.append(mark, info);
+    dashboardList.appendChild(currentItem);
+  }
+
+  const dashboardActions = $("dashboard-workspace-actions");
+  if (dashboardActions && !dashboardActions.dataset.ready) {
+    dashboardActions.dataset.ready = "true";
+    const inviteButton = document.createElement("button");
+    inviteButton.type = "button";
+    inviteButton.className = "secondary-button";
+    inviteButton.textContent = "Kelola Anggota / Undang";
+    inviteButton.addEventListener("click", () => navigateTo("users"));
+
+    const switchButton = document.createElement("button");
+    switchButton.type = "button";
+    switchButton.className = "secondary-button";
+    switchButton.textContent = "Pilih Workspace";
+    switchButton.addEventListener("click", async () => {
+      showScreen("workspace-screen");
+      await loadWorkspaces(false);
+    });
+    dashboardActions.append(inviteButton, switchButton);
+  }
 
   showScreen("app-shell");
   await navigateTo("home");
