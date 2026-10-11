@@ -13,7 +13,17 @@ const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_ztdupX3KWoKH3siIc6U7mQ_Yffv6prG
 
 const supabase = createClient(
   SUPABASE_URL,
-  SUPABASE_PUBLISHABLE_KEY
+  SUPABASE_PUBLISHABLE_KEY,
+  {
+    auth: {
+      // Pertahankan sesi login saat halaman ditutup dan dibuka kembali.
+      persistSession: true,
+      // Perbarui token sesi secara otomatis selama sesi masih valid.
+      autoRefreshToken: true,
+      // Tangani callback login OAuth seperti Google.
+      detectSessionInUrl: true
+    }
+  }
 );
 
 // Simpan workspace terakhir agar bisa dibuka kembali setelah webapp ditutup.
