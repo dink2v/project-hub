@@ -421,11 +421,6 @@ supabase.auth.onAuthStateChange((event, session) => {
     projects = [];
     showScreen("auth-screen");
   }
-
-  // Keep the login screen hidden while a valid session exists.
-  if (session?.user && event !== "PASSWORD_RECOVERY") {
-    currentUser = session.user;
-  }
 });
 
 initializeAuth();
