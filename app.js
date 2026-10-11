@@ -951,12 +951,30 @@ async function navigateTo(page) {
 
   target.classList.remove("hidden");
 
+  const secondaryPages = ["features", "revisions", "activities", "users", "settings"];
+  const isSecondaryPage = secondaryPages.includes(page);
+
   document.querySelectorAll("[data-page]").forEach((button) => {
-    button.classList.toggle(
-      "active",
-      button.dataset.page === page
-    );
+    button.classList.toggle("active", button.dataset.page === page);
   });
+
+  ["sidebar-more-toggle", "mobile-more-toggle"].forEach((id) => {
+    const button = $(id);
+    if (button) {
+      button.classList.toggle("active", isSecondaryPage);
+      button.setAttribute("aria-expanded", String(isSecondaryPage));
+    }
+  });
+
+  const sidebarMoreMenu = $("sidebar-more-menu");
+  if (sidebarMoreMenu) sidebarMoreMenu.classList.toggle("hidden", !isSecondaryPage);
+
+  const mobileMoreMenu = $("mobile-more-menu");
+  if (mobileMoreMenu) mobileMoreMenu.classList.toggle("hidden", !isSecondaryPage);
+
+  const mobileNav = $("mobile-nav");
+  if (mobileNav) mobileNav.classList.add("hidden");
+  $("mobile-menu-button")?.setAttribute("aria-expanded", "false");
 
   const titles = {
     home: "Beranda",
@@ -1045,11 +1063,28 @@ document.querySelectorAll("[data-page]").forEach((button) => {
   });
 });
 
+function toggleMoreMenu(buttonId, menuId) {
+  const button = $(buttonId);
+  const menu = $(menuId);
+  if (!button || !menu) return;
+
+  button.addEventListener("click", () => {
+    const willOpen = menu.classList.contains("hidden");
+    menu.classList.toggle("hidden", !willOpen);
+    button.setAttribute("aria-expanded", String(willOpen));
+  });
+}
+
+toggleMoreMenu("sidebar-more-toggle", "sidebar-more-menu");
+toggleMoreMenu("mobile-more-toggle", "mobile-more-menu");
+
 $("mobile-menu-button")?.addEventListener("click", () => {
   const nav = $("mobile-nav");
   if (!nav) return;
 
-  nav.classList.toggle("hidden");
+  const willOpen = nav.classList.contains("hidden");
+  nav.classList.toggle("hidden", !willOpen);
+  $("mobile-menu-button")?.setAttribute("aria-expanded", String(willOpen));
 });
 
 $("home-add-project")?.addEventListener("click", () => {
