@@ -909,7 +909,6 @@ async function loadWorkspaceMembers() {
     </div>
   `;
 
-  $("invite-user-button")?.addEventListener("click", handleInviteButtonClick, { once: true });
 }
 
 function handleInviteButtonClick() {
@@ -918,7 +917,7 @@ function handleInviteButtonClick() {
     return;
   }
 
-  if (!["Owner", "Editor"].includes(currentWorkspace.role)) {
+  if (currentWorkspace.role !== "Owner") {
     showToast("Peran kamu belum memiliki izin untuk mengundang anggota.", "error");
     return;
   }
