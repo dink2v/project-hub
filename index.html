@@ -3,509 +3,716 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#16A34A">
-  <meta name="description" content="Project Hub - pusat pengelolaan proyek">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#16a34a">
+  <meta name="description" content="Project Hub - Pusat dokumentasi dan kolaborasi proyek.">
+
   <title>Project Hub</title>
-  <link rel="manifest" href="./manifest.json">
-  <style>
-    :root {
-      --bg: #F7F9FC;
-      --green: #16A34A;
-      --soft: #E8F5E9;
-      --text: #1F2937;
-      --muted: #6B7280;
-      --border: #E5E7EB;
-      --surface: #FFFFFF;
-    }
 
-    * { box-sizing: border-box; }
-
-    body {
-      margin: 0;
-      font-family: system-ui, Arial, sans-serif;
-      color: var(--text);
-      background: var(--bg);
-    }
-
-    button, input, select, textarea { font: inherit; }
-    button { cursor: pointer; }
-
-    .sidebar {
-      position: fixed;
-      inset: 0 auto 0 0;
-      width: 230px;
-      padding: 22px 14px;
-      background: var(--surface);
-      border-right: 1px solid var(--border);
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin: 0 8px 28px;
-      font-size: 19px;
-      font-weight: 750;
-    }
-
-    .brand-icon {
-      display: grid;
-      place-items: center;
-      width: 38px;
-      height: 38px;
-      color: white;
-      background: var(--green);
-      border-radius: 11px;
-    }
-
-    .nav-label {
-      padding: 8px 12px;
-      color: var(--muted);
-      font-size: 11px;
-      letter-spacing: 1px;
-    }
-
-    .nav-item {
-      display: block;
-      width: 100%;
-      padding: 12px;
-      margin: 3px 0;
-      text-align: left;
-      color: var(--muted);
-      background: transparent;
-      border: 0;
-      border-radius: 9px;
-    }
-
-    .nav-item.active {
-      color: #15803D;
-      background: var(--soft);
-      font-weight: 650;
-    }
-
-    main {
-      margin-left: 230px;
-      padding: 22px 28px 40px;
-    }
-
-    header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 30px;
-    }
-
-    .workspace {
-      color: var(--muted);
-      font-size: 13px;
-    }
-
-    .avatar {
-      display: grid;
-      place-items: center;
-      width: 38px;
-      height: 38px;
-      border-radius: 50%;
-      background: var(--soft);
-      color: #15803D;
-      font-weight: bold;
-    }
-
-    h1 { margin: 0 0 8px; font-size: 25px; }
-    h2 { margin: 0; font-size: 17px; }
-
-    .subtitle {
-      margin: 0 0 24px;
-      color: var(--muted);
-      font-size: 14px;
-      line-height: 1.6;
-    }
-
-    .stats {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 14px;
-      margin-bottom: 25px;
-    }
-
-    .card {
-      min-width: 0;
-      padding: 18px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 13px;
-    }
-
-    .stat-label { color: var(--muted); font-size: 13px; }
-    .stat-value { margin-top: 12px; font-size: 27px; font-weight: 750; }
-
-    .section-heading {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 14px;
-    }
-
-    .primary-btn {
-      padding: 10px 14px;
-      color: white;
-      background: var(--green);
-      border: 0;
-      border-radius: 9px;
-    }
-
-    .secondary-btn {
-      padding: 9px 12px;
-      color: var(--text);
-      background: white;
-      border: 1px solid var(--border);
-      border-radius: 9px;
-    }
-
-    .project {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-      padding: 15px 0;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .project:last-child { border-bottom: 0; }
-    .project-name { font-weight: 650; overflow-wrap: anywhere; }
-    .project-code { margin-top: 5px; color: var(--muted); font-size: 12px; }
-
-    .status {
-      padding: 6px 9px;
-      border-radius: 20px;
-      background: var(--soft);
-      color: #15803D;
-      font-size: 12px;
-      white-space: nowrap;
-    }
-
-    .muted { color: var(--muted); font-size: 13px; }
-    .empty { padding: 28px 10px; text-align: center; color: var(--muted); }
-
-    .form-area { display: none; margin-bottom: 20px; }
-    .form-area.open { display: block; }
-
-    label { display: block; margin: 12px 0 6px; font-size: 13px; }
-
-    input, select {
-      width: 100%;
-      padding: 11px;
-      color: var(--text);
-      background: white;
-      border: 1px solid var(--border);
-      border-radius: 9px;
-    }
-
-    .form-actions { display: flex; gap: 8px; margin-top: 14px; }
-
-    #message { margin: 12px 0; font-size: 13px; }
-    .mobile-brand, .bottom-nav { display: none; }
-
-    @media (max-width: 700px) {
-      .sidebar { display: none; }
-      main { margin: 0; padding: 16px 14px 90px; }
-      .mobile-brand { display: block; font-size: 19px; font-weight: 750; }
-      header { margin-bottom: 25px; }
-      .workspace { font-size: 11px; }
-      h1 { font-size: 22px; }
-      .stats { grid-template-columns: 1fr; gap: 9px; }
-      .card { padding: 15px; }
-      .bottom-nav {
-        position: fixed;
-        inset: auto 0 0;
-        z-index: 10;
-        display: flex;
-        justify-content: space-around;
-        padding: 8px 2px;
-        background: white;
-        border-top: 1px solid var(--border);
-      }
-      .bottom-nav button {
-        max-width: 20%;
-        padding: 5px 2px;
-        border: 0;
-        background: transparent;
-        color: var(--muted);
-        font-size: 10px;
-      }
-      .bottom-nav button.active { color: var(--green); font-weight: bold; }
-    }
-  </style>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
-  <aside class="sidebar">
-    <div class="brand"><span class="brand-icon">P</span>Project Hub</div>
-    <div class="nav-label">MENU UTAMA</div>
-    <nav id="sideNav"></nav>
-  </aside>
+  <div id="toast-container" class="toast-container"></div>
 
-  <main>
-    <header>
-      <div>
-        <div class="mobile-brand">Project Hub</div>
-        <div class="workspace">Workspace: Ruang Kerja Saya</div>
+  <!-- =====================================
+       LOGIN DAN PENDAFTARAN
+  ====================================== -->
+  <main id="auth-screen" class="auth-screen">
+    <section class="auth-card">
+      <div class="brand-mark">PH</div>
+
+      <h1 id="auth-title">Masuk ke akun</h1>
+      <p id="auth-description">
+        Masuk untuk melanjutkan ke workspace kamu.
+      </p>
+
+      <div id="auth-message" class="hidden" role="status"></div>
+
+      <form id="auth-form">
+        <div id="auth-name-group" class="form-group hidden">
+          <label for="auth-name">Nama lengkap</label>
+          <input
+            id="auth-name"
+            name="name"
+            type="text"
+            autocomplete="name"
+            placeholder="Nama lengkap"
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="auth-email">Email</label>
+          <input
+            id="auth-email"
+            name="email"
+            type="email"
+            autocomplete="email"
+            placeholder="nama@email.com"
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="auth-password">Password</label>
+          <input
+            id="auth-password"
+            name="password"
+            type="password"
+            autocomplete="current-password"
+            minlength="6"
+            placeholder="Masukkan password"
+            required
+          >
+        </div>
+
+        <button
+          id="auth-submit"
+          class="primary-button"
+          type="submit"
+        >
+          Masuk
+        </button>
+      </form>
+
+      <button
+        id="forgot-password-button"
+        class="text-button"
+        type="button"
+      >
+        Lupa password?
+      </button>
+
+      <div class="auth-switch">
+        <span id="auth-switch-text">Belum punya akun?</span>
+        <button
+          id="auth-switch-button"
+          class="text-button"
+          type="button"
+        >
+          Daftar
+        </button>
       </div>
-      <div class="avatar" title="Profil">U</div>
-    </header>
-
-    <section id="content"></section>
-    <p id="message" role="status" aria-live="polite"></p>
+    </section>
   </main>
 
-  <nav id="bottomNav" class="bottom-nav"></nav>
+  <!-- =====================================
+       VERIFIKASI OTP
+  ====================================== -->
+  <main id="otp-screen" class="auth-screen hidden">
+    <section class="auth-card">
+      <div class="brand-mark">PH</div>
 
-  <script>
-    const DB_NAME = "ProjectHubLocal";
-    const DB_VERSION = 1;
-    const STORE = "projects";
+      <h1>Verifikasi Email</h1>
+      <p>
+        Masukkan kode OTP yang dikirim ke email kamu.
+      </p>
 
-    const menus = [
-      ["Beranda", "⌂"],
-      ["Data Proyek", "▦"],
-      ["Daftar Fitur", "◈"],
-      ["Catatan Umum", "▤"],
-      ["Riwayat Revisi", "↻"],
-      ["Aktivitas", "◷"],
-      ["Pengguna", "♙"],
-      ["Pengaturan", "⚙"]
-    ];
+      <div class="form-group">
+        <label for="otp-code">Kode OTP</label>
+        <input
+          id="otp-code"
+          type="text"
+          inputmode="numeric"
+          autocomplete="one-time-code"
+          pattern="[0-9]{6}"
+          maxlength="6"
+          placeholder="Masukkan 6 digit kode"
+          required
+        >
+      </div>
 
-    let currentPage = "Beranda";
-    let db;
+      <form id="otp-form">
+        <button
+          id="otp-submit"
+          class="primary-button"
+          type="submit"
+        >
+          Verifikasi Kode
+        </button>
+      </form>
 
-    function openDatabase() {
-      return new Promise((resolve, reject) => {
-        if (!("indexedDB" in window)) {
-          reject(new Error("Browser ini tidak mendukung IndexedDB."));
-          return;
-        }
+      <button
+        id="otp-resend"
+        class="secondary-button"
+        type="button"
+      >
+        Kirim Ulang Kode
+      </button>
 
-        const request = indexedDB.open(DB_NAME, DB_VERSION);
+      <p id="otp-message" role="status"></p>
+    </section>
+  </main>
 
-        request.onupgradeneeded = () => {
-          const database = request.result;
-          if (!database.objectStoreNames.contains(STORE)) {
-            const store = database.createObjectStore(STORE, {
-              keyPath: "id",
-              autoIncrement: true
-            });
-            store.createIndex("code", "code", { unique: true });
-            store.createIndex("updatedAt", "updatedAt");
-          }
-        };
-
-        request.onsuccess = () => resolve(request.result);
-        request.onerror = () => reject(request.error);
-      });
-    }
-
-    function getProjects() {
-      return new Promise((resolve, reject) => {
-        const tx = db.transaction(STORE, "readonly");
-        const request = tx.objectStore(STORE).getAll();
-        request.onsuccess = () => resolve(request.result);
-        request.onerror = () => reject(request.error);
-      });
-    }
-
-    function saveProject(project) {
-      return new Promise((resolve, reject) => {
-        const tx = db.transaction(STORE, "readwrite");
-        tx.objectStore(STORE).add(project);
-        tx.oncomplete = () => resolve();
-        tx.onerror = () => reject(tx.error);
-        tx.onabort = () => reject(tx.error);
-      });
-    }
-
-    function showMessage(text) {
-      document.getElementById("message").textContent = text;
-    }
-
-    function escapeHTML(value) {
-      return String(value).replace(/[&<>"']/g, char => ({
-        "&": "&amp;",
-        "<": "&lt;",
-        ">": "&gt;",
-        '"': "&quot;",
-        "'": "&#39;"
-      })[char]);
-    }
-
-    function renderMenus() {
-      const makeButtons = (items) => items.map(([name, icon]) =>
-        `<button class="nav-item ${name === currentPage ? "active" : ""}"
-          data-page="${name}">${icon} &nbsp; ${name}</button>`
-      ).join("");
-
-      document.getElementById("sideNav").innerHTML = makeButtons(menus);
-      document.getElementById("bottomNav").innerHTML =
-        menus.slice(0, 5).map(([name, icon]) =>
-          `<button class="${name === currentPage ? "active" : ""}"
-            data-page="${name}">${icon}<br>${name}</button>`
-        ).join("");
-
-      document.querySelectorAll("[data-page]").forEach(button => {
-        button.addEventListener("click", () => {
-          currentPage = button.dataset.page;
-          renderMenus();
-          renderContent();
-        });
-      });
-    }
-
-    async function renderContent() {
-      const content = document.getElementById("content");
-
-      if (currentPage === "Beranda" || currentPage === "Data Proyek") {
-        const projects = await getProjects();
-        const isHome = currentPage === "Beranda";
-
-        content.innerHTML = `
-          <h1>${isHome ? "Beranda" : "Data Proyek"}</h1>
-          <p class="subtitle">${
-            isHome
-              ? "Ringkasan proyek dalam workspace ini."
-              : "Kelola proyek yang tersimpan di perangkat ini."
-          }</p>
-          ${isHome ? `
-            <div class="stats">
-              <div class="card">
-                <div class="stat-label">Total Proyek Lokal</div>
-                <div class="stat-value">${projects.length}</div>
-              </div>
-              <div class="card">
-                <div class="stat-label">Proyek Aktif</div>
-                <div class="stat-value">${
-                  projects.filter(p => p.status === "Aktif").length
-                }</div>
-              </div>
-              <div class="card">
-                <div class="stat-label">Penyimpanan</div>
-                <div class="stat-value" style="font-size:18px">HP ini</div>
-              </div>
-            </div>` : ""}
-          <div class="section-heading">
-            <h2>${isHome ? "Proyek Terbaru" : "Semua Proyek"}</h2>
-            <button class="primary-btn" id="showForm">+ Proyek Baru</button>
-          </div>
-          <div class="card form-area" id="formArea">
-            <h2>Tambah Proyek</h2>
-            <form id="projectForm">
-              <label for="projectName">Nama proyek *</label>
-              <input id="projectName" maxlength="100" required
-                placeholder="Contoh: Project Hub">
-              <label for="projectDescription">Deskripsi</label>
-              <input id="projectDescription" maxlength="500"
-                placeholder="Tujuan singkat proyek">
-              <label for="projectStatus">Status awal</label>
-              <select id="projectStatus">
-                <option>Perencanaan</option>
-                <option>Aktif</option>
-              </select>
-              <div class="form-actions">
-                <button class="primary-btn" type="submit">Simpan Lokal</button>
-                <button class="secondary-btn" type="button" id="cancelForm">
-                  Batal
-                </button>
-              </div>
-            </form>
-          </div>
-          <div class="card" id="projectList"></div>
-          <p class="muted">Data tahap ini hanya tersimpan di browser HP ini,
-          belum tersinkron ke pengguna lain.</p>
-        `;
-
-        document.getElementById("projectList").innerHTML = projects.length
-          ? projects
-              .sort((a, b) => b.updatedAt - a.updatedAt)
-              .map(p => `
-                <div class="project">
-                  <div>
-                    <div class="project-name">${escapeHTML(p.name)}</div>
-                    <div class="project-code">${escapeHTML(p.code)} ·
-                      ${escapeHTML(p.description || "Tanpa deskripsi")}</div>
-                  </div>
-                  <span class="status">${escapeHTML(p.status)}</span>
-                </div>
-              `).join("")
-          : `<div class="empty">Belum ada proyek. Tekan + Proyek Baru untuk memulai.</div>`;
-
-        document.getElementById("showForm").onclick = () => {
-          document.getElementById("formArea").classList.add("open");
-          document.getElementById("projectName").focus();
-        };
-
-        document.getElementById("cancelForm").onclick = () => {
-          document.getElementById("formArea").classList.remove("open");
-        };
-
-        document.getElementById("projectForm").onsubmit = async event => {
-          event.preventDefault();
-
-          const name = document.getElementById("projectName").value.trim();
-          if (!name) return;
-
-          const existing = await getProjects();
-          const now = Date.now();
-          const project = {
-            code: "PRJ-" + String(now),
-            name,
-            description: document.getElementById("projectDescription").value.trim(),
-            status: document.getElementById("projectStatus").value,
-            createdAt: now,
-            updatedAt: now,
-            syncStatus: "pending"
-          };
-
-          try {
-            await saveProject(project);
-            showMessage("Proyek berhasil disimpan secara lokal di HP ini.");
-            await renderContent();
-          } catch (error) {
-            showMessage("Gagal menyimpan proyek: " + error.message);
-          }
-        };
-
-        return;
-      }
-
-      content.innerHTML = `
-        <h1>${escapeHTML(currentPage)}</h1>
-        <p class="subtitle">Bagian ini akan kita bangun bertahap.</p>
-        <div class="card empty">
-          Fitur ini belum diaktifkan. Database online dan autentikasi
-          belum terhubung.
+  <!-- =====================================
+       PILIH WORKSPACE
+  ====================================== -->
+  <main id="workspace-screen" class="workspace-screen hidden">
+    <header class="workspace-header">
+      <div class="brand">
+        <div class="brand-mark">PH</div>
+        <div>
+          <h1>Project Hub</h1>
+          <p>Workspace kamu</p>
         </div>
-      `;
+      </div>
+
+      <button
+        id="workspace-logout-button"
+        class="secondary-button"
+        type="button"
+      >
+        Keluar
+      </button>
+    </header>
+
+    <section class="workspace-container">
+      <div class="section-heading">
+        <div>
+          <h2>Pilih Workspace</h2>
+          <p>Buka workspace untuk melanjutkan pekerjaan.</p>
+        </div>
+      </div>
+
+      <div id="workspace-list" class="workspace-list">
+        <div class="empty-state">
+          <strong>Memuat workspace...</strong>
+          <p>Mohon tunggu sebentar.</p>
+        </div>
+      </div>
+
+      <section class="create-workspace-card">
+        <h3>Buat Workspace Baru</h3>
+        <p>Buat ruang kerja untuk mengelola proyek.</p>
+
+        <div class="form-group">
+          <label for="new-workspace-name">Nama workspace</label>
+          <input
+            id="new-workspace-name"
+            type="text"
+            maxlength="100"
+            placeholder="Contoh: Tim Pengembangan"
+          >
+        </div>
+
+        <button
+          id="create-workspace-button"
+          class="primary-button"
+          type="button"
+        >
+          + Buat Workspace
+        </button>
+      </section>
+
+      <section class="join-workspace-card">
+        <h3>Gabung Workspace</h3>
+        <p>Masukkan kode undangan dari pemilik workspace.</p>
+
+        <div class="form-group">
+          <label for="invite-code">Kode undangan</label>
+          <input
+            id="invite-code"
+            type="text"
+            placeholder="Masukkan kode undangan"
+          >
+        </div>
+
+        <button
+          id="join-workspace-button"
+          class="secondary-button"
+          type="button"
+        >
+          Gabung
+        </button>
+      </section>
+    </section>
+  </main>
+
+  <!-- =====================================
+       APLIKASI UTAMA
+  ====================================== -->
+  <div id="app-shell" class="app-shell hidden">
+
+    <!-- SIDEBAR -->
+    <aside id="sidebar" class="sidebar">
+      <div class="sidebar-brand">
+        <div class="brand-mark">PH</div>
+        <div>
+          <strong>Project Hub</strong>
+          <span>Workspace</span>
+        </div>
+      </div>
+
+      <button
+        id="workspace-switcher"
+        class="workspace-switcher"
+        type="button"
+      >
+        <span>
+          <strong id="sidebar-workspace-name">Workspace</strong>
+          <small id="sidebar-workspace-role">Anggota</small>
+        </span>
+        <span>⌄</span>
+      </button>
+
+      <nav class="sidebar-nav" aria-label="Navigasi utama">
+        <p class="nav-label">MENU UTAMA</p>
+
+        <button data-page="home" class="nav-item active" type="button">
+          <span>⌂</span> Beranda
+        </button>
+
+        <button data-page="projects" class="nav-item" type="button">
+          <span>▤</span> Data Proyek
+        </button>
+
+        <button data-page="features" class="nav-item" type="button">
+          <span>◇</span> Daftar Fitur
+        </button>
+
+        <p class="nav-label">DOKUMENTASI</p>
+
+        <button data-page="general-notes" class="nav-item" type="button">
+          <span>▧</span> Catatan Umum
+        </button>
+
+        <button data-page="revisions" class="nav-item" type="button">
+          <span>↻</span> Riwayat Revisi
+        </button>
+
+        <button data-page="activities" class="nav-item" type="button">
+          <span>◷</span> Aktivitas
+        </button>
+
+        <p class="nav-label">PENGELOLAAN</p>
+
+        <button data-page="users" class="nav-item" type="button">
+          <span>♙</span> Pengguna
+        </button>
+
+        <button data-page="settings" class="nav-item" type="button">
+          <span>⚙</span> Pengaturan
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <button id="logout-button" class="nav-item" type="button">
+          <span>↪</span> Keluar
+        </button>
+      </div>
+    </aside>
+
+    <!-- KONTEN -->
+    <main class="main-area">
+
+      <header class="topbar">
+        <button
+          id="mobile-menu-button"
+          class="icon-button"
+          type="button"
+          aria-label="Buka menu"
+        >
+          ☰
+        </button>
+
+        <div class="topbar-heading">
+          <h1 id="topbar-title">Beranda</h1>
+        </div>
+
+        <div class="topbar-actions">
+          <button
+            id="notification-button"
+            class="icon-button"
+            type="button"
+            aria-label="Notifikasi"
+          >
+            ♧
+          </button>
+
+          <div class="user-profile">
+            <div id="user-avatar" class="user-avatar">U</div>
+            <div class="user-profile-info">
+              <strong id="user-name">Pengguna</strong>
+              <span id="user-email">email@example.com</span>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <nav id="mobile-nav" class="mobile-nav hidden">
+        <button data-page="home" type="button">Beranda</button>
+        <button data-page="projects" type="button">Data Proyek</button>
+        <button data-page="features" type="button">Daftar Fitur</button>
+        <button data-page="general-notes" type="button">Catatan Umum</button>
+        <button data-page="revisions" type="button">Riwayat Revisi</button>
+        <button data-page="activities" type="button">Aktivitas</button>
+        <button data-page="users" type="button">Pengguna</button>
+        <button data-page="settings" type="button">Pengaturan</button>
+      </nav>
+
+      <div class="page-content">
+
+        <!-- BERANDA -->
+        <section id="page-home" class="page">
+          <div class="page-intro">
+            <div>
+              <h2>Ringkasan Proyek</h2>
+              <p>Pantau perkembangan seluruh proyek workspace.</p>
+            </div>
+
+            <button id="home-add-project" class="primary-button" type="button">
+              + Tambah Proyek
+            </button>
+          </div>
+
+          <div class="stats-grid">
+            <article class="stat-card">
+              <span>Total Proyek</span>
+              <strong id="stat-total-projects">0</strong>
+            </article>
+
+            <article class="stat-card">
+              <span>Sedang Dikerjakan</span>
+              <strong id="stat-active-projects">0</strong>
+            </article>
+
+            <article class="stat-card">
+              <span>Revisi</span>
+              <strong id="stat-revision-projects">0</strong>
+            </article>
+
+            <article class="stat-card">
+              <span>Selesai</span>
+              <strong id="stat-completed-projects">0</strong>
+            </article>
+          </div>
+
+          <section class="content-card">
+            <div class="section-heading">
+              <div>
+                <h2>Proyek Terbaru</h2>
+                <p>Proyek yang terakhir diperbarui.</p>
+              </div>
+
+              <button
+                data-page="projects"
+                class="text-button"
+                type="button"
+              >
+                Lihat semua →
+              </button>
+            </div>
+
+            <div id="recent-projects" class="recent-projects">
+              <p>Memuat proyek...</p>
+            </div>
+          </section>
+
+          <section class="content-card">
+            <div class="section-heading">
+              <div>
+                <h2>Aktivitas Terbaru</h2>
+                <p>Ringkasan aktivitas workspace.</p>
+              </div>
+            </div>
+
+            <div id="recent-activities">
+              <p>Belum ada aktivitas.</p>
+            </div>
+          </section>
+        </section>
+
+        <!-- DATA PROYEK -->
+        <section id="page-projects" class="page hidden">
+          <div class="page-intro">
+            <div>
+              <h2>Data Proyek</h2>
+              <p>Kelola proyek dan pantau status pengerjaannya.</p>
+            </div>
+
+            <button id="add-project-button" class="primary-button" type="button">
+              + Tambah Proyek
+            </button>
+          </div>
+
+          <div class="project-toolbar">
+            <div class="form-group search-group">
+              <label for="project-search">Cari proyek</label>
+              <input
+                id="project-search"
+                type="search"
+                placeholder="Cari nama atau deskripsi..."
+              >
+            </div>
+
+            <div class="form-group">
+              <label for="project-status-filter">Status</label>
+              <select id="project-status-filter">
+                <option value="all">Semua Status</option>
+                <option value="Belum Dikerjakan">Belum Dikerjakan</option>
+                <option value="Sedang Dikerjakan">Sedang Dikerjakan</option>
+                <option value="Revisi">Revisi</option>
+                <option value="Selesai">Selesai</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="project-sort">Urutkan</label>
+              <select id="project-sort">
+                <option value="updated">Terakhir diperbarui</option>
+                <option value="oldest">Terlama diperbarui</option>
+                <option value="name">Nama proyek</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="project-list" class="project-list">
+            <p>Memuat proyek...</p>
+          </div>
+        </section>
+
+        <!-- DAFTAR FITUR -->
+        <section id="page-features" class="page hidden">
+          <div class="page-intro">
+            <div>
+              <h2>Daftar Fitur</h2>
+              <p>Dokumentasikan fitur yang dibutuhkan setiap proyek.</p>
+            </div>
+          </div>
+
+          <div class="content-card">
+            <div id="features-content">
+              <p>Fitur akan ditampilkan di sini.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- CATATAN UMUM -->
+        <section id="page-general-notes" class="page hidden">
+          <div class="page-intro">
+            <div>
+              <h2>Catatan Umum</h2>
+              <p>Simpan catatan penting workspace.</p>
+            </div>
+          </div>
+
+          <div class="content-card">
+            <div id="general-notes-content">
+              <p>Catatan umum akan ditampilkan di sini.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- RIWAYAT REVISI -->
+        <section id="page-revisions" class="page hidden">
+          <div class="page-intro">
+            <div>
+              <h2>Riwayat Revisi</h2>
+              <p>Lihat perubahan dan catatan revisi proyek.</p>
+            </div>
+          </div>
+
+          <div class="content-card">
+            <div id="revisions-content">
+              <p>Riwayat revisi akan ditampilkan di sini.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- AKTIVITAS -->
+        <section id="page-activities" class="page hidden">
+          <div class="page-intro">
+            <div>
+              <h2>Aktivitas</h2>
+              <p>Riwayat kegiatan anggota workspace.</p>
+            </div>
+          </div>
+
+          <div class="content-card">
+            <div id="activities-content">
+              <p>Aktivitas akan ditampilkan di sini.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- PENGGUNA -->
+        <section id="page-users" class="page hidden">
+          <div class="page-intro">
+            <div>
+              <h2>Pengguna Workspace</h2>
+              <p>Kelola anggota dan peran mereka.</p>
+            </div>
+
+            <button id="invite-user-button" class="primary-button" type="button">
+              + Undang Pengguna
+            </button>
+          </div>
+
+          <div class="content-card">
+            <div id="users-content">
+              <p>Memuat anggota workspace...</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- PENGATURAN -->
+        <section id="page-settings" class="page hidden">
+          <div class="page-intro">
+            <div>
+              <h2>Pengaturan</h2>
+              <p>Atur tampilan dan preferensi Project Hub.</p>
+            </div>
+          </div>
+
+          <div class="content-card settings-card">
+            <div class="settings-item">
+              <div>
+                <strong>Tampilan</strong>
+                <p>Pilih tampilan aplikasi.</p>
+              </div>
+
+              <select id="theme-setting">
+                <option value="light">Terang</option>
+                <option value="dark">Gelap</option>
+              </select>
+            </div>
+
+            <div class="settings-item">
+              <div>
+                <strong>Kepadatan tampilan</strong>
+                <p>Atur jarak antarelemen.</p>
+              </div>
+
+              <select id="density-setting">
+                <option value="comfortable">Nyaman</option>
+                <option value="compact">Ringkas</option>
+              </select>
+            </div>
+
+            <div class="settings-item">
+              <div>
+                <strong>Notifikasi</strong>
+                <p>Preferensi notifikasi aplikasi.</p>
+              </div>
+
+              <select id="notifications-setting">
+                <option value="on">Aktif</option>
+                <option value="off">Nonaktif</option>
+              </select>
+            </div>
+
+            <div class="settings-item">
+              <div>
+                <strong>Email akun</strong>
+                <p id="settings-account-email">-</p>
+              </div>
+            </div>
+
+            <div class="settings-item">
+              <div>
+                <strong>Versi aplikasi</strong>
+                <p>Project Hub Web</p>
+              </div>
+            </div>
+
+            <button
+              id="settings-logout-button"
+              class="danger-button"
+              type="button"
+            >
+              Keluar dari akun
+            </button>
+          </div>
+        </section>
+
+        <!-- DETAIL PROYEK -->
+        <section id="page-project-detail" class="page hidden">
+          <div class="page-intro">
+            <div>
+              <button id="back-to-projects" class="text-button" type="button">
+                ← Kembali ke Data Proyek
+              </button>
+
+              <h2 id="detail-project-title">Detail Proyek</h2>
+              <p id="detail-project-description"></p>
+            </div>
+
+            <button id="edit-project-button" class="secondary-button" type="button">
+              Edit Proyek
+            </button>
+          </div>
+
+          <div class="detail-tabs">
+            <button data-tab="info" class="active" type="button">
+              Informasi
+            </button>
+            <button data-tab="features" type="button">
+              Fitur
+            </button>
+            <button data-tab="notes" type="button">
+              Catatan
+            </button>
+            <button data-tab="revisions" type="button">
+              Revisi
+            </button>
+            <button data-tab="activities" type="button">
+              Aktivitas
+            </button>
+          </div>
+
+          <div id="project-detail-content" class="content-card">
+            <p>Informasi proyek akan ditampilkan di sini.</p>
+          </div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- =====================================
+       MODAL UMUM
+  ====================================== -->
+  <div id="modal-backdrop" class="modal-backdrop hidden">
+    <section
+      class="modal-card"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modal-title"
+    >
+      <header class="modal-header">
+        <h2 id="modal-title">Formulir</h2>
+
+        <button
+          id="modal-close-button"
+          class="icon-button"
+          type="button"
+          aria-label="Tutup"
+        >
+          ×
+        </button>
+      </header>
+
+      <div id="modal-body" class="modal-body"></div>
+
+      <footer id="modal-footer" class="modal-footer"></footer>
+    </section>
+  </div>
+
+  <!-- JAVASCRIPT UTAMA -->
+  <script type="module" src="app.js"></script>
+
+  <!-- SERVICE WORKER PWA -->
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./sw.js")
+          .catch((error) => {
+            console.error("Service worker gagal didaftarkan:", error);
+          });
+      });
     }
-
-    async function startApp() {
-      try {
-        db = await openDatabase();
-        renderMenus();
-        await renderContent();
-
-        if ("serviceWorker" in navigator &&
-            (location.protocol === "https:" ||
-             location.hostname === "localhost")) {
-          navigator.serviceWorker.register("./sw.js")
-            .catch(error => console.warn("Service worker:", error));
-        }
-      } catch (error) {
-        showMessage("Database lokal belum bisa dibuka: " + error.message);
-      }
-    }
-
-    startApp();
   </script>
 </body>
 </html>
