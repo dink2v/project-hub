@@ -326,26 +326,10 @@ setButtonLoading(button, false);
    SESI LOGIN
 ========================================= */
 
-// Fungsi ini akan dilengkapi pada bagian workspace.
 async function afterLogin() {
   if (!currentUser) return;
 
-  showScreen("workspace-screen");
-
-  const list = $("workspace-list");
-  if (list) {
-    list.innerHTML = `
-      <div class="empty-state">
-        <strong>Memuat workspace...</strong>
-        <p>Mohon tunggu sebentar.</p>
-      </div>
-    `;
-  }
-
-  // Fungsi loadWorkspaces akan ditambahkan pada bagian berikutnya.
-  if (typeof loadWorkspaces === "function") {
-    await loadWorkspaces();
-  }
+  await loadWorkspaces(true);
 }
 
 async function handleLogout() {
@@ -440,6 +424,150 @@ supabase.auth.onAuthStateChange((event, session) => {
 
 initializeAuth();
 
+function ensureDashboardWorkspacePanel() {
+  const homePage = $("page-home");
+  if (!homePage) return null;
+
+  let panel = $("dashboard-workspace-panel");
+  if (!panel) {
+    panel = document.createElement("section");
+    panel.id = "dashboard-workspace-panel";
+    panel.className = "content-card";
+    panel.innerHTML = `
+      <div class="section-heading">
+        <div>
+          <h2>Workspace Saya</h2>
+          <p>Kelola ruang kerja dan anggota langsung dari dashboard.</p>
+        </div>
+      </div>
+      <div id="dashboard-workspace-list" class="workspace-list"></div>
+      <div id="dashboard-workspace-actions" class="dashboard-workspace-actions"></div>
+      <div id="dashboard-workspace-create-slot"></div>
+      <div id="dashboard-workspace-join-slot"></div>
+    `;
+
+    const stats = homePage.querySelector(".stats-grid");
+    homePage.insertBefore(panel, stats || homePage.firstChild);
+  }
+
+  // Gunakan form workspace yang sudah ada agar tidak menduplikasi ID atau logika.
+  const createCard = document.querySelector(".create-workspace-card");
+  const joinCard = document.querySelector(".join-workspace-card");
+  const createSlot = $("dashboard-workspace-create-slot");
+  const joinSlot = $("dashboard-workspace-join-slot");
+
+  if (createCard && createSlot && createCard.parentElement !== createSlot) {
+    createSlot.appendChild(createCard);
+  }
+  if (joinCard && joinSlot && joinCard.parentElement !== joinSlot) {
+    joinSlot.appendChild(joinCard);
+  }
+
+  return panel;
+}
+
+function renderPersonalWorkspaceDashboard(workspaces = []) {
+  currentWorkspace = null;
+  projects = [];
+
+  const panel = ensureDashboardWorkspacePanel();
+  if (!panel) {
+    showScreen("workspace-screen");
+    return;
+  }
+
+  const list = $("dashboard-workspace-list");
+  const actions = $("dashboard-workspace-actions");
+
+  if (list) {
+    list.replaceChildren();
+
+    if (workspaces.length) {
+      workspaces.forEach((workspace) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "workspace-option";
+
+        const mark = document.createElement("div");
+        mark.className = "brand-mark";
+        mark.style.width = "40px";
+        mark.style.height = "40px";
+        mark.textContent = "W";
+
+        const info = document.createElement("div");
+        info.className = "workspace-info";
+
+        const name = document.createElement("strong");
+        name.textContent = workspace.name;
+
+        const role = document.createElement("span");
+        role.className = "muted small";
+        role.textContent = workspace.role || "Anggota";
+
+        info.append(name, role);
+
+        const arrow = document.createElement("span");
+        arrow.textContent = "Buka →";
+
+        button.append(mark, info, arrow);
+        button.addEventListener("click", () => openWorkspace(workspace));
+        list.appendChild(button);
+      });
+    } else {
+      const empty = document.createElement("div");
+      empty.className = "empty-state";
+      empty.innerHTML = "<strong>Belum ada workspace</strong><p>Kamu tetap bisa menggunakan dashboard pribadi. Buat workspace jika ingin mengelola proyek bersama anggota lain.</p>";
+      list.appendChild(empty);
+    }
+  }
+
+  if (actions) {
+    actions.replaceChildren();
+
+    const inviteButton = document.createElement("button");
+    inviteButton.type = "button";
+    inviteButton.className = "secondary-button";
+    inviteButton.textContent = "Kelola Anggota / Undang";
+    inviteButton.addEventListener("click", () => {
+      if (!currentWorkspace) {
+        showToast("Buat atau buka workspace terlebih dahulu untuk mengundang anggota.", "info");
+        return;
+      }
+      navigateTo("users");
+    });
+
+    const switchButton = document.createElement("button");
+    switchButton.type = "button";
+    switchButton.className = "secondary-button";
+    switchButton.textContent = "Pilih Workspace";
+    switchButton.addEventListener("click", async () => {
+      showScreen("workspace-screen");
+      await loadWorkspaces(false);
+    });
+
+    actions.append(inviteButton, switchButton);
+  }
+
+  // Dashboard pribadi tetap dapat dibuka tanpa workspace.
+  if ($("sidebar-workspace-name")) $("sidebar-workspace-name").textContent = "Dashboard Pribadi";
+  if ($("sidebar-workspace-role")) $("sidebar-workspace-role").textContent = "Pribadi";
+  if ($("user-name")) {
+    $("user-name").textContent =
+      currentUser?.user_metadata?.full_name ||
+      currentUser?.email?.split("@")[0] ||
+      "Pengguna";
+  }
+  if ($("user-email")) $("user-email").textContent = currentUser?.email || "";
+  if ($("settings-account-email")) $("settings-account-email").textContent = currentUser?.email || "";
+  if ($("user-avatar")) {
+    const displayName = currentUser?.user_metadata?.full_name || currentUser?.email || "U";
+    $("user-avatar").textContent = displayName.charAt(0).toUpperCase();
+  }
+
+  showScreen("app-shell");
+  navigateTo("home");
+}
+
 async function loadWorkspaces(autoOpenSavedWorkspace = true) {
   const list = $("workspace-list");
   if (!currentUser || !list) return;
@@ -467,6 +595,10 @@ async function loadWorkspaces(autoOpenSavedWorkspace = true) {
           <p>Buat workspace baru atau terima undangan untuk mulai.</p>
         </div>
       `;
+
+      if (autoOpenSavedWorkspace) {
+        renderPersonalWorkspaceDashboard([]);
+      }
       return;
     }
 
@@ -510,6 +642,11 @@ async function loadWorkspaces(autoOpenSavedWorkspace = true) {
 
     if (lastWorkspace) {
       await openWorkspace(lastWorkspace);
+      return;
+    }
+
+    if (autoOpenSavedWorkspace) {
+      renderPersonalWorkspaceDashboard(workspaces);
       return;
     }
 
@@ -666,6 +803,9 @@ async function openWorkspace(workspace) {
     $("user-avatar").textContent = name.charAt(0).toUpperCase();
   }
 
+  const panel = $("dashboard-workspace-panel");
+  if (panel) panel.classList.add("hidden");
+
   showScreen("app-shell");
   await navigateTo("home");
 }
@@ -675,6 +815,11 @@ async function openWorkspace(workspace) {
 ========================================= */
 
 async function navigateTo(page) {
+  if (!currentWorkspace && page !== "home" && page !== "settings") {
+    showToast("Buka atau buat workspace untuk menggunakan fitur ini.", "info");
+    page = "home";
+  }
+
   const target = $("page-" + page);
 
   if (!target) {
@@ -714,8 +859,15 @@ async function navigateTo(page) {
   }
 
   if (page === "home" || page === "projects") {
-    if (typeof loadProjects === "function") {
+    if (currentWorkspace && typeof loadProjects === "function") {
       await loadProjects();
+    } else if (!currentWorkspace) {
+      projects = [];
+      renderDashboard();
+      const projectList = $("project-list");
+      if (projectList) {
+        projectList.innerHTML = "<div class=\"empty-state\"><strong>Dashboard pribadi</strong><p>Buat atau buka workspace untuk mulai mengelola proyek.</p></div>";
+      }
     }
   }
 
