@@ -16,6 +16,9 @@ const supabase = createClient(
   SUPABASE_PUBLISHABLE_KEY
 );
 
+// Simpan workspace terakhir agar bisa dibuka kembali setelah webapp ditutup.
+const LAST_WORKSPACE_STORAGE_KEY = "project_hub_last_workspace_id";
+
 // State aplikasi yang dipakai oleh bagian berikutnya.
 let currentUser = null;
 let currentWorkspace = null;
@@ -343,6 +346,7 @@ async function handleLogout() {
     currentUser = null;
     currentWorkspace = null;
     projects = [];
+    localStorage.removeItem(LAST_WORKSPACE_STORAGE_KEY);
 
     showScreen("auth-screen");
     setAuthMode("login");
@@ -426,7 +430,7 @@ supabase.auth.onAuthStateChange((event, session) => {
 
 initializeAuth();
 
-async function loadWorkspaces() {
+async function loadWorkspaces(autoOpenSavedWorkspace = true) {
   const list = $("workspace-list");
   if (!currentUser || !list) return;
 
@@ -487,6 +491,18 @@ async function loadWorkspaces() {
       return;
     }
 
+    // Saat login biasa, buka otomatis workspace terakhir yang masih bisa diakses.
+    // Saat pengguna memilih Ganti Workspace, tampilkan daftar tanpa membuka otomatis.
+    const lastWorkspaceId = localStorage.getItem(LAST_WORKSPACE_STORAGE_KEY);
+    const lastWorkspace = autoOpenSavedWorkspace
+      ? workspaces.find((workspace) => String(workspace.id) === lastWorkspaceId)
+      : null;
+
+    if (lastWorkspace) {
+      await openWorkspace(lastWorkspace);
+      return;
+    }
+
     list.replaceChildren();
 
     workspaces.forEach((workspace) => {
@@ -537,7 +553,7 @@ async function loadWorkspaces() {
     `;
 
     $("workspace-load-error").textContent = getErrorMessage(error);
-    $("retry-workspaces").addEventListener("click", loadWorkspaces);
+    $("retry-workspaces").addEventListener("click", () => loadWorkspaces());
   }
 }
 
@@ -621,6 +637,9 @@ async function openWorkspace(workspace) {
   if (!workspace?.id) return;
 
   currentWorkspace = workspace;
+
+  // ID ini bukan akses otomatis: keanggotaan tetap diverifikasi dari Supabase.
+  localStorage.setItem(LAST_WORKSPACE_STORAGE_KEY, String(workspace.id));
 
   if ($("sidebar-workspace-name")) {
     $("sidebar-workspace-name").textContent = workspace.name;
@@ -743,7 +762,7 @@ $("create-workspace-button")?.addEventListener(
 
 $("workspace-switcher")?.addEventListener("click", async () => {
   showScreen("workspace-screen");
-  await loadWorkspaces();
+  await loadWorkspaces(false);
 });
 
 $("join-workspace-button")?.addEventListener("click", () => {
