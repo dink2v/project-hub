@@ -356,10 +356,11 @@
 
         <!-- BERANDA -->
         <section id="page-home" class="page">
-          <div class="page-intro">
+          <div class="page-intro dashboard-intro">
             <div>
+              <span class="dashboard-eyebrow">PROJECT OVERVIEW</span>
               <h2>Ringkasan Proyek</h2>
-              <p>Pantau perkembangan seluruh proyek workspace.</p>
+              <p>Pantau progres, proyek terbaru, dan aktivitas workspace dalam satu tempat.</p>
             </div>
 
             <button id="home-add-project" class="primary-button" type="button">
@@ -368,22 +369,26 @@
           </div>
 
           <div class="stats-grid">
-            <article class="stat-card">
+            <article class="stat-card stat-total">
+              <div class="stat-icon" aria-hidden="true">▤</div>
               <span>Total Proyek</span>
               <strong id="stat-total-projects">0</strong>
             </article>
 
-            <article class="stat-card">
+            <article class="stat-card stat-active">
+              <div class="stat-icon" aria-hidden="true">◷</div>
               <span>Sedang Dikerjakan</span>
               <strong id="stat-active-projects">0</strong>
             </article>
 
-            <article class="stat-card">
+            <article class="stat-card stat-revision">
+              <div class="stat-icon" aria-hidden="true">↻</div>
               <span>Revisi</span>
               <strong id="stat-revision-projects">0</strong>
             </article>
 
-            <article class="stat-card">
+            <article class="stat-card stat-completed">
+              <div class="stat-icon" aria-hidden="true">✓</div>
               <span>Selesai</span>
               <strong id="stat-completed-projects">0</strong>
             </article>
