@@ -590,12 +590,26 @@ async function createWorkspace() {
   setButtonLoading(button, true, "Membuat...");
 
   try {
+    // Ambil UID terbaru dari sesi Supabase agar sesuai dengan auth.uid() pada RLS.
+    const { data: authData, error: authError } = await supabase.auth.getUser();
+    if (authError) throw authError;
+
+    const authenticatedUser = authData.user;
+    if (!authenticatedUser) {
+      currentUser = null;
+      showToast("Sesi login berakhir. Silakan masuk kembali.", "error");
+      return;
+    }
+
+    currentUser = authenticatedUser;
+    const userId = authenticatedUser.id;
+
     // Buat workspace.
     const { data: workspace, error: workspaceError } = await supabase
       .from("workspaces")
       .insert({
         name,
-        created_by: currentUser.id
+        created_by: userId
       })
       .select("id, name")
       .single();
@@ -607,7 +621,7 @@ async function createWorkspace() {
       .from("workspace_members")
       .insert({
         workspace_id: workspace.id,
-        user_id: currentUser.id,
+        user_id: userId,
         role: "Owner"
       });
 
