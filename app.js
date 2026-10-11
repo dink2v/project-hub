@@ -284,6 +284,28 @@ async function handleForgotPassword() {
   } finally {
     setButtonLoading(button, false);
   }
+  async function handleGoogleLogin() {
+const button = $("google-login-button");
+
+hideAuthMessage();
+setButtonLoading(button, true, "Menghubungkan...");
+
+try {
+const { error } = await supabase.auth.signInWithOAuth({
+provider: "google",
+options: {
+redirectTo: window.location.origin + window.location.pathname
+}
+});
+
+if (error) throw error;
+
+} catch (error) {
+console.error("Login Google gagal:", error);
+showAuthMessage(getErrorMessage(error));
+setButtonLoading(button, false);
+}
+  }
 }
 
 /* =========================================
@@ -337,6 +359,10 @@ async function handleLogout() {
 ========================================= */
 
 $("auth-form")?.addEventListener("submit", handleAuthSubmit);
+$("google-login-button")?.addEventListener(
+  "click",
+  handleGoogleLogin
+);
 
 $("auth-switch-button")?.addEventListener("click", () => {
   setAuthMode(authMode === "login" ? "signup" : "login");
