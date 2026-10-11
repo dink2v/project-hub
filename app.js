@@ -853,6 +853,80 @@ async function openWorkspace(workspace) {
 }
 
 /* =========================================
+   ANGGOTA WORKSPACE
+========================================= */
+
+async function loadWorkspaceMembers() {
+  const container = $("users-content");
+  if (!container) return;
+
+  if (!currentUser || !currentWorkspace) {
+    container.innerHTML = '<div class="empty-state"><strong>Workspace belum dibuka</strong><p>Buka atau buat workspace untuk melihat anggotanya.</p></div>';
+    return;
+  }
+
+  container.innerHTML = '<div class="loading-state">Memuat anggota workspace...</div>';
+
+  const { data, error } = await supabase
+    .from("workspace_members")
+    .select("user_id, role")
+    .eq("workspace_id", currentWorkspace.id)
+    .order("role", { ascending: true });
+
+  if (error) {
+    console.error("Gagal memuat anggota workspace:", error);
+    container.innerHTML = `
+      <div class="empty-state">
+        <strong>Anggota gagal dimuat</strong>
+        <p>${escapeHtml(getErrorMessage(error))}</p>
+        <button id="retry-load-members" class="secondary-button" type="button">Coba Lagi</button>
+      </div>
+    `;
+    $("retry-load-members")?.addEventListener("click", loadWorkspaceMembers);
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    container.innerHTML = '<div class="empty-state"><strong>Belum ada anggota</strong><p>Daftar anggota akan muncul di sini setelah ada anggota workspace.</p></div>';
+    return;
+  }
+
+  container.innerHTML = `
+    <div class="member-list-summary"><strong>${data.length} anggota</strong><p class="muted">Informasi email/nama anggota akan ditampilkan setelah profil anggota terhubung.</p></div>
+    <div class="table-responsive">
+      <table>
+        <thead><tr><th>Anggota</th><th>Peran</th></tr></thead>
+        <tbody>
+          ${data.map((member) => {
+            const isCurrentUser = String(member.user_id) === String(currentUser.id);
+            const memberLabel = isCurrentUser
+              ? (currentUser.user_metadata?.full_name || currentUser.email || member.user_id)
+              : "ID: " + String(member.user_id).slice(0, 8) + "…";
+            return `<tr><td><strong>${escapeHtml(memberLabel)}</strong>${isCurrentUser ? '<div class="muted small">Akun kamu</div>' : ''}</td><td><span class="badge">${escapeHtml(member.role || "Viewer")}</span></td></tr>`;
+          }).join("")}
+        </tbody>
+      </table>
+    </div>
+  `;
+
+  $("invite-user-button")?.addEventListener("click", handleInviteButtonClick, { once: true });
+}
+
+function handleInviteButtonClick() {
+  if (!currentWorkspace) {
+    showToast("Buka workspace terlebih dahulu.", "info");
+    return;
+  }
+
+  if (!["Owner", "Editor"].includes(currentWorkspace.role)) {
+    showToast("Peran kamu belum memiliki izin untuk mengundang anggota.", "error");
+    return;
+  }
+
+  showToast("Halaman Anggota sudah aktif. Sistem undangan perlu disambungkan ke fungsi undangan aman di Supabase sebelum undangan dikirim.", "info");
+}
+
+/* =========================================
    NAVIGASI HALAMAN
 ========================================= */
 
@@ -891,7 +965,7 @@ async function navigateTo(page) {
     "general-notes": "Catatan Umum",
     revisions: "Riwayat Revisi",
     activities: "Aktivitas",
-    users: "Pengguna",
+    users: "Anggota",
     settings: "Pengaturan",
     "project-detail": "Detail Proyek"
   };
@@ -941,6 +1015,8 @@ async function navigateTo(page) {
 /* =========================================
    EVENT LISTENERS WORKSPACE
 ========================================= */
+
+$("invite-user-button")?.addEventListener("click", handleInviteButtonClick);
 
 $("create-workspace-button")?.addEventListener(
   "click",
