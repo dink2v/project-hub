@@ -1551,13 +1551,19 @@ function renderDashboard() {
     recentContainer.innerHTML = recent.length
       ? recent.map((project) => `
           <div class="recent-project-item">
-            <strong>${escapeHtml(project.name || "Tanpa nama")}</strong>
+            <div class="recent-project-leading">
+              <span class="recent-project-icon" aria-hidden="true">▤</span>
+              <div class="recent-project-copy">
+                <strong>${escapeHtml(project.name || "Tanpa nama")}</strong>
+                <small>Proyek workspace</small>
+              </div>
+            </div>
             <span class="badge ${getStatusClass(getProjectStatus(project))}">
               ${escapeHtml(getProjectStatus(project))}
             </span>
           </div>
         `).join("")
-      : "<p>Belum ada proyek. Buat proyek pertamamu untuk memulai.</p>";
+      : "<p>Belum ada proyek. Buat proyek pertamamu untuk memulai.";
   }
 }
 
