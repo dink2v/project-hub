@@ -284,7 +284,9 @@ async function handleForgotPassword() {
   } finally {
     setButtonLoading(button, false);
   }
-  async function handleGoogleLogin() {
+}
+
+async function handleGoogleLogin() {
 const button = $("google-login-button");
 
 hideAuthMessage();
@@ -305,7 +307,6 @@ console.error("Login Google gagal:", error);
 showAuthMessage(getErrorMessage(error));
 setButtonLoading(button, false);
 }
-  }
 }
 
 /* =========================================
