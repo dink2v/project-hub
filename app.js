@@ -590,68 +590,25 @@ async function createWorkspace() {
   setButtonLoading(button, true, "Membuat...");
 
   try {
-    // Ambil UID terbaru dari sesi Supabase agar sesuai dengan auth.uid() pada RLS.
-    const { data: authData, error: authError } = await supabase.auth.getUser();
-    if (authError) throw authError;
-
-    const authenticatedUser = authData.user;
-    if (!authenticatedUser) {
-      currentUser = null;
-      showToast("Sesi login berakhir. Silakan masuk kembali.", "error");
-      return;
-    }
-
-    currentUser = authenticatedUser;
-    const userId = authenticatedUser.id;
-
-    // Buat ID di client agar tidak perlu meminta RETURNING sebelum menjadi anggota.
-    const workspaceId = crypto.randomUUID();
-
-    // INSERT tanpa SELECT: policy select_member belum mengizinkan pembuat
-    // membaca workspace sebelum baris Owner berhasil dibuat.
-    const { error: workspaceError } = await supabase
-      .from("workspaces")
-      .insert({
-        id: workspaceId,
-        name,
-        created_by: userId
-      });
+    // Pembuatan workspace + Owner dilakukan secara atomik oleh fungsi database.
+    const { data: workspace, error: workspaceError } = await supabase
+      .rpc("create_workspace", { p_name: name });
 
     if (workspaceError) throw workspaceError;
 
-    // Tambahkan pembuat sebagai Owner.
-    const { error: memberError } = await supabase
-      .from("workspace_members")
-      .insert({
-        workspace_id: workspaceId,
-        user_id: userId,
-        role: "Owner"
-      });
+    const createdWorkspace = Array.isArray(workspace)
+      ? workspace[0]
+      : workspace;
 
-    if (memberError) {
-      console.error("Workspace dibuat, tetapi keanggotaan gagal:", memberError);
-      showToast(
-        "Workspace sudah dibuat, tetapi keanggotaan Owner gagal disimpan. Periksa kebijakan RLS sebelum mencoba lagi.",
-        "error"
-      );
-      await loadWorkspaces();
-      return;
+    if (!createdWorkspace?.id) {
+      throw new Error("Fungsi create_workspace tidak mengembalikan ID workspace.");
     }
-
-    // Setelah menjadi anggota, ambil data workspace melalui policy SELECT.
-    const { data: workspace, error: selectError } = await supabase
-      .from("workspaces")
-      .select("id, name")
-      .eq("id", workspaceId)
-      .single();
-
-    if (selectError) throw selectError;
 
     input.value = "";
     showToast("Workspace berhasil dibuat.", "success");
 
     await openWorkspace({
-      ...workspace,
+      ...createdWorkspace,
       role: "Owner"
     });
   } catch (error) {
