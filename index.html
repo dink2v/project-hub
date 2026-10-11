@@ -257,44 +257,19 @@
         <span>⌄</span>
       </button>
 
-      <nav class="sidebar-nav" aria-label="Navigasi utama">
-        <p class="nav-label">MENU UTAMA</p>
-
-        <button data-page="home" class="nav-item active" type="button">
-          <span>⌂</span> Beranda
-        </button>
-
-        <button data-page="projects" class="nav-item" type="button">
-          <span>▤</span> Data Proyek
-        </button>
-
-        <button data-page="features" class="nav-item" type="button">
-          <span>◇</span> Daftar Fitur
-        </button>
-
-        <p class="nav-label">DOKUMENTASI</p>
-
-        <button data-page="general-notes" class="nav-item" type="button">
-          <span>▧</span> Catatan Umum
-        </button>
-
-        <button data-page="revisions" class="nav-item" type="button">
-          <span>↻</span> Riwayat Revisi
-        </button>
-
-        <button data-page="activities" class="nav-item" type="button">
-          <span>◷</span> Aktivitas
-        </button>
-
-        <p class="nav-label">PENGELOLAAN</p>
-
-        <button data-page="users" class="nav-item" type="button">
-          <span>♙</span> Anggota
-        </button>
-
-        <button data-page="settings" class="nav-item" type="button">
-          <span>⚙</span> Pengaturan
-        </button>
+      <nav class="sidebar-nav compact-sidebar-nav" aria-label="Navigasi utama">
+        <p class="nav-label">MENU</p>
+        <button data-page="home" class="nav-item active" type="button"><span>⌂</span> Beranda</button>
+        <button data-page="projects" class="nav-item" type="button"><span>▤</span> Proyek</button>
+        <button data-page="general-notes" class="nav-item" type="button"><span>▧</span> Catatan</button>
+        <button id="sidebar-more-toggle" class="nav-item more-menu-toggle" type="button" aria-expanded="false" aria-controls="sidebar-more-menu"><span>•••</span> Lainnya <span class="more-chevron">⌄</span></button>
+        <div id="sidebar-more-menu" class="nav-submenu hidden">
+          <button data-page="features" class="nav-item" type="button"><span>◇</span> Daftar Fitur</button>
+          <button data-page="revisions" class="nav-item" type="button"><span>↻</span> Riwayat Revisi</button>
+          <button data-page="activities" class="nav-item" type="button"><span>◷</span> Aktivitas</button>
+          <button data-page="users" class="nav-item" type="button"><span>♙</span> Anggota</button>
+          <button data-page="settings" class="nav-item" type="button"><span>⚙</span> Pengaturan</button>
+        </div>
       </nav>
 
       <div class="sidebar-footer">
@@ -342,14 +317,17 @@
       </header>
 
       <nav id="mobile-nav" class="mobile-nav hidden" aria-label="Navigasi aplikasi">
-        <button data-page="home" type="button">Beranda</button>
-        <button data-page="projects" type="button">Data Proyek</button>
-        <button data-page="features" type="button">Daftar Fitur</button>
-        <button data-page="general-notes" type="button">Catatan Umum</button>
-        <button data-page="revisions" type="button">Riwayat Revisi</button>
-        <button data-page="activities" type="button">Aktivitas</button>
-        <button data-page="users" type="button">Anggota</button>
-        <button data-page="settings" type="button">Pengaturan</button>
+        <button data-page="home" type="button">⌂ Beranda</button>
+        <button data-page="projects" type="button">▤ Proyek</button>
+        <button data-page="general-notes" type="button">▧ Catatan</button>
+        <button id="mobile-more-toggle" type="button" class="more-menu-toggle" aria-expanded="false" aria-controls="mobile-more-menu">••• Lainnya <span class="more-chevron">⌄</span></button>
+        <div id="mobile-more-menu" class="nav-submenu mobile-submenu hidden">
+          <button data-page="features" type="button">Daftar Fitur</button>
+          <button data-page="revisions" type="button">Riwayat Revisi</button>
+          <button data-page="activities" type="button">Aktivitas</button>
+          <button data-page="users" type="button">Anggota</button>
+          <button data-page="settings" type="button">Pengaturan</button>
+        </div>
         <button id="mobile-logout-button" type="button">Keluar dari akun</button>
       </nav>
 
@@ -416,18 +394,18 @@
             </div>
           </section>
 
-          <section class="content-card">
-            <div class="section-heading">
+          <details class="content-card compact-activity-panel">
+            <summary class="section-heading compact-activity-summary">
               <div>
                 <h2>Aktivitas Terbaru</h2>
                 <p>Ringkasan aktivitas workspace.</p>
               </div>
-            </div>
-
+              <span class="activity-expand-label">Lihat</span>
+            </summary>
             <div id="recent-activities">
               <p>Belum ada aktivitas.</p>
             </div>
-          </section>
+          </details>
         </section>
 
         <!-- DATA PROYEK -->
