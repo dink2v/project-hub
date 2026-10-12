@@ -377,34 +377,56 @@ $("logout-button")?.addEventListener("click", handleLogout);
 $("mobile-logout-button")?.addEventListener("click", handleLogout);
 $("settings-logout-button")?.addEventListener("click", handleLogout);
 
-// Periksa sesi yang masih aktif saat halaman dibuka.
+// Pulihkan sesi saat halaman dibuka ulang.
 async function initializeAuth() {
-  try {
-    if (
-      SUPABASE_PUBLISHABLE_KEY === "TEMPEL_PUBLISHABLE_KEY_DI_SINI"
-    ) {
-      showScreen("auth-screen");
-      showAuthMessage(
-        "Konfigurasi belum selesai. Masukkan publishable key Supabase di app.js."
-      );
-      return;
-    }
-
-    const { data, error } = await supabase.auth.getSession();
-    if (error) throw error;
-
-    if (data.session?.user) {
-      currentUser = data.session.user;
-      await afterLogin();
-    } else {
-      showScreen("auth-screen");
-      setAuthMode("login");
-    }
-  } catch (error) {
-    console.error("Inisialisasi autentikasi gagal:", error);
+  if (
+    SUPABASE_PUBLISHABLE_KEY === "TEMPEL_PUBLISHABLE_KEY_DI_SINI"
+  ) {
     showScreen("auth-screen");
     showAuthMessage(
-      "Tidak dapat memeriksa sesi login. Periksa koneksi internet dan konfigurasi Supabase."
+      "Konfigurasi belum selesai. Masukkan publishable key Supabase di app.js."
+    );
+    return;
+  }
+
+  let session = null;
+
+  // Pisahkan kegagalan membaca sesi dari kegagalan memuat data workspace.
+  // Error workspace tidak boleh membuat pengguna yang masih login kembali ke form login.
+  try {
+    const { data, error } = await supabase.auth.getSession();
+    if (error) throw error;
+    session = data.session;
+  } catch (error) {
+    console.error("Pemeriksaan sesi login gagal:", error);
+    showScreen("auth-screen");
+    setAuthMode("login");
+    showAuthMessage(
+      "Sesi login belum dapat diperiksa. Periksa koneksi internet lalu muat ulang halaman."
+    );
+    return;
+  }
+
+  if (!session?.user) {
+    currentUser = null;
+    showScreen("auth-screen");
+    setAuthMode("login");
+    return;
+  }
+
+  currentUser = session.user;
+
+  try {
+    await afterLogin();
+  } catch (error) {
+    console.error("Sesi pulih, tetapi data workspace gagal dimuat:", error);
+
+    // Pertahankan sesi aktif dan buka dashboard pribadi sebagai fallback,
+    // bukan mengembalikan pengguna ke halaman login.
+    renderPersonalWorkspaceDashboard([]);
+    showToast(
+      "Sesi login masih aktif, tetapi data workspace gagal dimuat. Periksa koneksi lalu coba lagi.",
+      "error"
     );
   }
 }
