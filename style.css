@@ -2173,3 +2173,193 @@ input:focus,textarea:focus,select:focus{border-color:#9aafa6;box-shadow:0 0 0 3p
 button.primary-button,.primary-button,.btn-primary,.active-nav,.nav-link.active,.sidebar a.active,.bottom-nav a.active,.tab-button.active,.detail-tabs button.active{background-color:#718b82!important;border-color:#718b82!important;color:#fff!important}
 button.primary-button:hover,.primary-button:hover,.btn-primary:hover{background-color:#637b72!important}
 .badge-success,.status-success,.status-approved,.text-success{color:#526b62!important;background-color:#edf2ef!important;border-color:#dce6e0!important}
+
+
+/* Tambah/Edit Proyek — polished responsive modal */
+#modal-backdrop {
+  z-index: 300;
+  padding: 20px;
+  background: rgba(39, 49, 44, .38);
+  backdrop-filter: blur(7px);
+  -webkit-backdrop-filter: blur(7px);
+}
+#modal-backdrop .modal-card {
+  display: flex;
+  flex-direction: column;
+  width: min(100%, 520px);
+  max-height: min(88vh, 760px);
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid #e4e8e5;
+  border-radius: 20px;
+  box-shadow: 0 24px 70px rgba(39, 49, 44, .16);
+  animation: project-modal-in .18s ease-out;
+}
+#modal-backdrop .modal-header {
+  flex-shrink: 0;
+  padding: 22px 24px 17px;
+  border-bottom: 1px solid #edf0ed;
+}
+#modal-backdrop #modal-title {
+  color: #303936;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -.025em;
+}
+#modal-backdrop #modal-close-button {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  color: #68746e;
+  background: #f3f6f4;
+  border: 1px solid #e8ede9;
+  border-radius: 11px;
+  font-size: 23px;
+  transition: background .18s ease, transform .18s ease;
+}
+#modal-backdrop #modal-close-button:hover {
+  background: #e9efeb;
+  transform: rotate(90deg);
+}
+#modal-backdrop .modal-body {
+  min-height: 0;
+  padding: 22px 24px;
+  overflow-y: auto;
+}
+#modal-backdrop #project-form {
+  display: grid;
+  gap: 19px;
+}
+#modal-backdrop #project-form::before {
+  content: "Lengkapi informasi berikut untuk mengatur proyek di workspace kamu.";
+  display: block;
+  margin-bottom: 1px;
+  color: #78817d;
+  font-size: 13px;
+  line-height: 1.6;
+}
+#modal-backdrop #project-form .form-group {
+  gap: 8px;
+}
+#modal-backdrop #project-form label {
+  color: #3e4943;
+  font-size: 13px;
+  font-weight: 650;
+}
+#modal-backdrop #project-form input,
+#modal-backdrop #project-form textarea,
+#modal-backdrop #project-form select {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 46px;
+  padding: 12px 13px;
+  color: #303936;
+  background: #fbfcfb;
+  border: 1px solid #e0e6e1;
+  border-radius: 11px;
+  outline: none;
+  font: inherit;
+  font-size: 14px;
+  transition: border-color .18s ease, box-shadow .18s ease, background .18s ease;
+}
+#modal-backdrop #project-form textarea {
+  min-height: 112px;
+  resize: vertical;
+  line-height: 1.6;
+}
+#modal-backdrop #project-form input::placeholder,
+#modal-backdrop #project-form textarea::placeholder {
+  color: #a0aaa4;
+}
+#modal-backdrop #project-form input:focus,
+#modal-backdrop #project-form textarea:focus,
+#modal-backdrop #project-form select:focus {
+  background: #fff;
+  border-color: #9aafa6;
+  box-shadow: 0 0 0 4px rgba(113, 139, 130, .11);
+}
+#modal-backdrop #project-form-error:not([hidden]) {
+  margin: 0;
+  padding: 11px 12px;
+  color: #985b55;
+  background: #fbf1ef;
+  border: 1px solid #f0dedb;
+  border-radius: 10px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+#modal-backdrop .modal-footer {
+  flex-shrink: 0;
+  padding: 16px 24px 21px;
+  background: #fff;
+  border-top: 1px solid #edf0ed;
+}
+#modal-backdrop #cancel-project-form,
+#modal-backdrop #save-project-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 43px;
+  padding: 11px 17px;
+  border-radius: 11px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: background .18s ease, border-color .18s ease, transform .18s ease;
+}
+#modal-backdrop #cancel-project-form {
+  color: #58645d;
+  background: #fff;
+  border: 1px solid #e0e6e1;
+}
+#modal-backdrop #cancel-project-form:hover {
+  background: #f5f7f5;
+}
+#modal-backdrop #save-project-button {
+  color: #fff;
+  background: #718b82;
+  border: 1px solid #718b82;
+}
+#modal-backdrop #save-project-button:hover {
+  background: #637b72;
+  border-color: #637b72;
+}
+#modal-backdrop #save-project-button:disabled {
+  opacity: .65;
+  cursor: wait;
+}
+@keyframes project-modal-in {
+  from { opacity: 0; transform: translateY(8px) scale(.99); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@media (max-width: 600px) {
+  #modal-backdrop {
+    align-items: flex-end;
+    padding: 10px;
+  }
+  #modal-backdrop .modal-card {
+    width: 100%;
+    max-height: 90dvh;
+    border-radius: 20px;
+  }
+  #modal-backdrop .modal-header {
+    padding: 18px 18px 14px;
+  }
+  #modal-backdrop .modal-body {
+    padding: 18px;
+  }
+  #modal-backdrop .modal-footer {
+    display: grid;
+    grid-template-columns: 1fr 1.35fr;
+    padding: 13px 18px max(16px, env(safe-area-inset-bottom));
+  }
+  #modal-backdrop #cancel-project-form,
+  #modal-backdrop #save-project-button {
+    width: 100%;
+    padding-inline: 10px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  #modal-backdrop .modal-card { animation: none; }
+}
