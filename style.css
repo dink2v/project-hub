@@ -2785,3 +2785,89 @@ tr:hover td { background: #fbfcfb; }
     height: 36px;
   }
 }
+
+
+/* =========================================
+   PROJECT HUB — MINIMALIS NETRAL
+   Palet global; tidak mengubah layout atau perilaku aplikasi.
+   ========================================= */
+:root {
+  --primary: #454b54;
+  --primary-dark: #303640;
+  --primary-soft: #eef0f2;
+  --background: #f7f7f8;
+  --surface: #ffffff;
+  --text: #252a31;
+  --text-muted: #6b7280;
+  --border: #e2e4e8;
+  --danger: #b94a48;
+  --warning: #a87524;
+  --shadow: 0 8px 24px rgba(24, 29, 37, 0.05);
+  --ph-ink: #252a31;
+  --ph-muted: #6b7280;
+  --ph-line: #e2e4e8;
+  --ph-sage: #454b54;
+  --ph-sage-dark: #303640;
+  --ph-sage-pale: #eef0f2;
+}
+body { background: #f7f7f8; color: #252a31; }
+#auth-screen, .auth-screen {
+  background: radial-gradient(circle at 10% 10%, rgba(69,75,84,.07), transparent 34%),
+              radial-gradient(circle at 90% 90%, rgba(69,75,84,.04), transparent 32%),
+              #f7f7f8;
+}
+.auth-logo, .brand-logo, .logo-mark {
+  background: linear-gradient(135deg, #737984, #454b54);
+  box-shadow: 0 7px 18px rgba(37,42,49,.12);
+}
+.primary-button, #auth-submit, #otp-submit, #create-workspace-button,
+#join-workspace-button, #add-project-button, #home-add-project,
+#invite-user-button {
+  background: #454b54;
+  border-color: #454b54;
+}
+.primary-button:hover, #auth-submit:hover, #otp-submit:hover,
+#create-workspace-button:hover, #join-workspace-button:hover,
+#add-project-button:hover, #home-add-project:hover, #invite-user-button:hover {
+  background: #303640;
+  border-color: #303640;
+}
+.sidebar nav button.active, .sidebar-nav button.active,
+.sidebar [data-page].active, .nav-item.active {
+  color: #303640;
+  background: #eef0f2;
+}
+.sidebar nav button:hover, .sidebar-nav button:hover,
+.sidebar [data-page]:hover, .nav-item:hover {
+  color: #303640;
+  background: #f2f3f5;
+}
+#user-avatar { color: #303640; background: #eef0f2; }
+#notification-button:hover { background: #eef0f2; }
+input:focus, textarea:focus, select:focus {
+  border-color: #737984;
+  box-shadow: 0 0 0 3px rgba(69,75,84,.10);
+}
+a { color: #454b54; }
+a:hover { color: #303640; }
+.project-card:hover { border-color: #c9cdd3; }
+.badge.active, .badge.sedang-dikerjakan, .status-active {
+  color: #3d604b; background: #e8f1eb;
+}
+.badge.revision, .badge.revisi, .status-revision {
+  color: #815c24; background: #f5eedf;
+}
+.badge.completed, .badge.selesai, .status-completed {
+  color: #365f8c; background: #e8eff8;
+}
+.badge.archived, .status-archived {
+  color: #626872; background: #eceef1;
+}
+button:focus-visible { outline-color: rgba(69,75,84,.24); }
+.toast.success { background: #3f6650; }
+#page-projects .project-table-wrap { border-color: #e2e4e8; }
+#page-projects .project-table th { background: #f2f3f5; }
+#page-projects .project-table tbody tr:hover td { background: #fafafb; }
+@media (prefers-color-scheme: light) {
+  body { color: #252a31; }
+}
