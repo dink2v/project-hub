@@ -1233,26 +1233,38 @@ function renderProjectCards() {
   const filteredProjects = getFilteredProjects();
 
   if (filteredProjects.length === 0) {
+    const hasProjects = projects.length > 0;
+    const hasFilters = Boolean(
+      document.getElementById("project-search")?.value.trim() ||
+      (document.getElementById("project-status-filter")?.value || "all") !== "all"
+    );
+
     container.innerHTML = `
-      <div class="empty-state">
-        <h3>Belum ada proyek</h3>
-        <p>
-          Proyek yang sesuai pencarian atau filter
-          akan muncul di sini.
-        </p>
-        <button
-          class="primary-button"
-          id="empty-add-project"
-          type="button"
-        >
-          + Tambah Proyek
-        </button>
+      <div class="empty-state project-empty-state">
+        <div class="empty-icon" aria-hidden="true">${hasProjects ? "⌕" : "▤"}</div>
+        <h3>${hasProjects && hasFilters ? "Tidak ada proyek yang cocok" : "Belum ada proyek"}</h3>
+        <p>${hasProjects && hasFilters
+          ? "Coba ubah kata kunci atau filter status untuk menemukan proyek."
+          : "Tambahkan proyek pertama untuk mulai mengelola pekerjaan."}</p>
+        ${hasProjects && hasFilters
+          ? '<button class="secondary-button" id="empty-reset-project-filters" type="button">Reset pencarian &amp; filter</button>'
+          : '<button class="primary-button" id="empty-add-project" type="button">+ Tambah Proyek</button>'}
       </div>
     `;
 
-    document
-      .getElementById("empty-add-project")
+    document.getElementById("empty-add-project")
       ?.addEventListener("click", () => openProjectForm());
+
+    document.getElementById("empty-reset-project-filters")
+      ?.addEventListener("click", () => {
+        const search = document.getElementById("project-search");
+        const status = document.getElementById("project-status-filter");
+        const sort = document.getElementById("project-sort");
+        if (search) search.value = "";
+        if (status) status.value = "all";
+        if (sort) sort.value = "updated";
+        renderProjectCards();
+      });
 
     return;
   }
@@ -1822,6 +1834,7 @@ function openProjectForm(project = null) {
   `;
 
   backdrop.classList.remove("hidden");
+  requestAnimationFrame(() => document.getElementById("project-name")?.focus());
 
   document
     .getElementById("cancel-project-form")
