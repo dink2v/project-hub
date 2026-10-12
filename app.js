@@ -1804,7 +1804,7 @@ function openProjectForm(project = null) {
         <select id="project-status" name="status" required>
           ${[
             "Perencanaan",
-            "Aktif",
+            "Sedang Dikerjakan",
             "Selesai",
             "Diarsipkan"
           ].map((status) => `
