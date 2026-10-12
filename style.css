@@ -3277,3 +3277,117 @@ input[type="search"]::-webkit-search-cancel-button {
   .toast, .toast-message { animation: none !important; }
   button:not(:disabled):active { transform: none; }
 }
+
+
+/* =========================================
+   UI/UX POLISH 3 — FORM, EMPTY STATE, LOADING
+========================================= */
+#modal-backdrop .modal-card {
+  max-height: min(88dvh, 760px);
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+#modal-backdrop .modal-body {
+  display: grid;
+  gap: 16px;
+}
+#modal-backdrop #project-form {
+  display: grid;
+  gap: 15px;
+}
+#modal-backdrop #project-form .form-group {
+  gap: 8px;
+}
+#modal-backdrop #project-form label {
+  color: var(--text, #303640);
+  font-size: 13px;
+  font-weight: 650;
+}
+#modal-backdrop #project-form input,
+#modal-backdrop #project-form textarea,
+#modal-backdrop #project-form select {
+  min-height: 44px;
+  transition: border-color .16s ease, box-shadow .16s ease;
+}
+#modal-backdrop #project-form textarea {
+  min-height: 100px;
+}
+#modal-backdrop #project-form input:focus,
+#modal-backdrop #project-form textarea:focus,
+#modal-backdrop #project-form select:focus {
+  outline: none;
+  border-color: #737b86;
+  box-shadow: 0 0 0 3px rgba(69,75,84,.12);
+}
+#modal-backdrop #project-form-error:not([hidden]) {
+  display: block;
+  margin: 0;
+  padding: 11px 12px;
+  color: #8f3539;
+  background: #fff4f3;
+  border: 1px solid #f0d4d2;
+  border-radius: 10px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.project-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 210px;
+  padding: 30px 18px;
+  text-align: center;
+  background: var(--surface, #fff);
+  border: 1px dashed var(--border, #d9dde2);
+}
+.project-empty-state .empty-icon {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  color: #454b54;
+  background: #eef0f3;
+  font-size: 21px;
+}
+.project-empty-state h3,
+.project-empty-state p {
+  margin: 0;
+}
+.project-empty-state p {
+  max-width: 390px;
+  line-height: 1.65;
+}
+.project-empty-state button {
+  margin-top: 5px;
+}
+#project-list > p,
+#recent-projects > p {
+  padding: 24px 16px;
+  color: var(--text-muted, #6b7280);
+  text-align: center;
+  line-height: 1.6;
+}
+@media (max-width: 700px) {
+  #modal-backdrop .modal-card {
+    width: 100%;
+    max-width: 100%;
+    max-height: calc(100dvh - 24px);
+    border-radius: 16px;
+  }
+  #modal-backdrop .modal-footer {
+    position: sticky;
+    bottom: 0;
+    padding-top: 12px;
+    background: inherit;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  #modal-backdrop #project-form input,
+  #modal-backdrop #project-form textarea,
+  #modal-backdrop #project-form select {
+    transition: none !important;
+  }
+}
