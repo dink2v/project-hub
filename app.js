@@ -1455,26 +1455,26 @@ function renderProjectDetail() {
     return;
   }
 
+  if (activeProjectTab === "features") {
+    renderProjectFeatures(content, activeProject);
+    return;
+  }
+
   const tabMessages = {
-    features: {
-      title: "Daftar fitur proyek",
-      description: "Bagian ini akan digunakan untuk menyusun dan mengelola fitur proyek.",
-      note: "Sebelum menyimpan fitur, struktur tabel fitur Supabase perlu dipastikan agar data terhubung ke proyek yang benar tanpa mengubah skema yang sudah berjalan."
-    },
     notes: {
       title: "Catatan proyek",
       description: "Catatan khusus proyek akan dikelola dari bagian ini.",
-      note: "Tampilan dan penyimpanan catatan akan disambungkan setelah struktur tabel yang tersedia diverifikasi."
+      note: "Tab Catatan akan disambungkan setelah Daftar Fitur selesai."
     },
     revisions: {
       title: "Riwayat revisi",
       description: "Catat permintaan revisi dan perkembangan perbaikannya.",
-      note: "Penyimpanan revisi akan disambungkan setelah struktur tabel yang tersedia diverifikasi."
+      note: "Tab Revisi akan disambungkan setelah Daftar Fitur selesai."
     },
     activities: {
       title: "Aktivitas proyek",
       description: "Lihat rangkuman aktivitas yang berkaitan dengan proyek ini.",
-      note: "Riwayat aktivitas akan disambungkan ke sumber data yang tersedia tanpa mengubah backend."
+      note: "Tab Aktivitas akan disambungkan setelah Daftar Fitur selesai."
     }
   };
 
@@ -1482,13 +1482,266 @@ function renderProjectDetail() {
   if (selectedTab) {
     content.innerHTML = `
       <div class="project-detail-placeholder">
-        <span class="detail-eyebrow">${activeProjectTab === "features" ? "MULAI DARI SINI" : "DETAIL PROYEK"}</span>
+        <span class="detail-eyebrow">DETAIL PROYEK</span>
         <h3>${escapeHtml(selectedTab.title)}</h3>
         <p>${escapeHtml(selectedTab.description)}</p>
         <div class="inline-notice">${escapeHtml(selectedTab.note)}</div>
       </div>
     `;
   }
+}
+
+let featureRows = [];
+let editingFeatureId = null;
+let featureLoadToken = 0;
+
+function renderProjectFeatures(content, project) {
+  const token = ++featureLoadToken;
+  content.innerHTML = `
+    <div class="features-panel">
+      <div class="features-panel-heading">
+        <div>
+          <span class="detail-eyebrow">PENGEMBANGAN PROYEK</span>
+          <h3>Daftar fitur</h3>
+          <p>Susun kebutuhan fitur dan pantau progresnya.</p>
+        </div>
+        <button type="button" class="primary-button" id="add-feature-button">+ Tambah fitur</button>
+      </div>
+      <div id="feature-form-container"></div>
+      <div id="feature-list-container" class="feature-list-container">
+        <p>Memuat daftar fitur...</p>
+      </div>
+    </div>
+  `;
+
+  $("add-feature-button")?.addEventListener("click", () => {
+    editingFeatureId = null;
+    renderFeatureForm();
+  });
+  loadProjectFeatures(project.id, token);
+}
+
+async function loadProjectFeatures(projectId, token = featureLoadToken) {
+  const container = $("feature-list-container");
+  if (!container) return;
+
+  const { data, error } = await supabase
+    .from("features")
+    .select("id, project_id, name, description, scope, status, assignee_id, created_by, created_at, updated_at")
+    .eq("project_id", projectId)
+    .order("created_at", { ascending: true });
+
+  if (token !== featureLoadToken || !document.getElementById("feature-list-container")) return;
+
+  if (error) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <strong>Daftar fitur gagal dimuat</strong>
+        <p>${escapeHtml(getErrorMessage(error))}</p>
+        <button type="button" id="retry-load-features">Coba lagi</button>
+      </div>`;
+    $("retry-load-features")?.addEventListener("click", () => loadProjectFeatures(projectId, token));
+    return;
+  }
+
+  featureRows = data || [];
+  renderFeatureList();
+}
+
+function renderFeatureList() {
+  const container = $("feature-list-container");
+  if (!container) return;
+
+  if (!featureRows.length) {
+    container.innerHTML = `
+      <div class="feature-empty-state">
+        <span aria-hidden="true">✦</span>
+        <strong>Belum ada fitur</strong>
+        <p>Tambahkan fitur pertama untuk mulai merencanakan proyek ini.</p>
+      </div>`;
+    return;
+  }
+
+  const completed = featureRows.filter((feature) => feature.status === "Selesai").length;
+  container.innerHTML = `
+    <div class="feature-summary"><span>${featureRows.length} fitur</span><span>${completed} selesai</span></div>
+    <div class="feature-list">
+      ${featureRows.map((feature) => {
+        const done = feature.status === "Selesai";
+        return `
+          <article class="feature-item ${done ? "is-complete" : ""}">
+            <div class="feature-item-main">
+              <button type="button" class="feature-status-toggle" data-feature-toggle="${escapeHtml(feature.id)}" aria-label="${done ? "Tandai belum selesai" : "Tandai selesai"}" title="${done ? "Tandai belum selesai" : "Tandai selesai"}">${done ? "✓" : "○"}</button>
+              <div class="feature-item-copy">
+                <h4>${escapeHtml(feature.name)}</h4>
+                <p>${escapeHtml(feature.description || "Belum ada deskripsi.")}</p>
+                ${feature.scope ? `<small>Cakupan: ${escapeHtml(feature.scope)}</small>` : ""}
+                <span class="badge ${done ? "status-completed" : "status-pending"}">${escapeHtml(feature.status)}</span>
+              </div>
+            </div>
+            <div class="feature-item-actions">
+              <button type="button" data-feature-edit="${escapeHtml(feature.id)}">Edit</button>
+              <button type="button" class="feature-delete-button" data-feature-delete="${escapeHtml(feature.id)}">Hapus</button>
+            </div>
+          </article>`;
+      }).join("")}
+    </div>`;
+
+  container.querySelectorAll("[data-feature-toggle]").forEach((button) => {
+    button.addEventListener("click", () => updateFeatureStatus(button.dataset.featureToggle));
+  });
+  container.querySelectorAll("[data-feature-edit]").forEach((button) => {
+    button.addEventListener("click", () => {
+      editingFeatureId = button.dataset.featureEdit;
+      renderFeatureForm(featureRows.find((feature) => feature.id === editingFeatureId));
+    });
+  });
+  container.querySelectorAll("[data-feature-delete]").forEach((button) => {
+    button.addEventListener("click", () => deleteFeature(button.dataset.featureDelete));
+  });
+}
+
+function renderFeatureForm(feature = null) {
+  const container = $("feature-form-container");
+  if (!container) return;
+
+  container.innerHTML = `
+    <form id="feature-form" class="feature-form">
+      <h4>${feature ? "Edit fitur" : "Tambah fitur"}</h4>
+      <div class="form-group">
+        <label for="feature-name">Nama fitur</label>
+        <input id="feature-name" name="name" maxlength="150" required value="${escapeHtml(feature?.name || "")}" placeholder="Contoh: Login pengguna">
+      </div>
+      <div class="form-group">
+        <label for="feature-description">Deskripsi</label>
+        <textarea id="feature-description" name="description" rows="3" placeholder="Jelaskan fungsi fitur">${escapeHtml(feature?.description || "")}</textarea>
+      </div>
+      <div class="form-group">
+        <label for="feature-scope">Cakupan</label>
+        <textarea id="feature-scope" name="scope" rows="2" placeholder="Batasan atau detail pekerjaan fitur">${escapeHtml(feature?.scope || "")}</textarea>
+      </div>
+      <div class="form-group">
+        <label for="feature-status">Status</label>
+        <select id="feature-status" name="status">
+          <option value="Belum Dikerjakan" ${!feature || feature.status === "Belum Dikerjakan" ? "selected" : ""}>Belum Dikerjakan</option>
+          <option value="Sedang Dikerjakan" ${feature?.status === "Sedang Dikerjakan" ? "selected" : ""}>Sedang Dikerjakan</option>
+          <option value="Selesai" ${feature?.status === "Selesai" ? "selected" : ""}>Selesai</option>
+        </select>
+      </div>
+      <p id="feature-form-error" class="form-error" hidden></p>
+      <div class="feature-form-actions">
+        <button type="button" id="cancel-feature-form">Batal</button>
+        <button type="submit" class="primary-button" id="save-feature-button">Simpan fitur</button>
+      </div>
+    </form>`;
+
+  $("cancel-feature-form")?.addEventListener("click", () => {
+    editingFeatureId = null;
+    container.innerHTML = "";
+  });
+  $("feature-form")?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    await saveFeature(feature);
+  });
+  $("feature-name")?.focus();
+}
+
+async function saveFeature(existingFeature = null) {
+  const button = $("save-feature-button");
+  const errorElement = $("feature-form-error");
+  if (!currentUser || !activeProject) {
+    showToast("Sesi pengguna atau proyek tidak ditemukan.", "error");
+    return;
+  }
+
+  const name = $("feature-name")?.value.trim();
+  const description = $("feature-description")?.value.trim() || "";
+  const scope = $("feature-scope")?.value.trim() || "";
+  const status = $("feature-status")?.value || "Belum Dikerjakan";
+
+  if (!name) {
+    if (errorElement) {
+      errorElement.textContent = "Nama fitur wajib diisi.";
+      errorElement.hidden = false;
+    }
+    return;
+  }
+
+  if (button) {
+    button.disabled = true;
+    button.textContent = "Menyimpan...";
+  }
+
+  const values = { name, description, scope, status, updated_at: new Date().toISOString() };
+  let result;
+  if (existingFeature) {
+    result = await supabase.from("features")
+      .update(values)
+      .eq("id", existingFeature.id)
+      .eq("project_id", activeProject.id);
+  } else {
+    result = await supabase.from("features").insert({
+      project_id: activeProject.id,
+      ...values,
+      created_by: currentUser.id
+    });
+  }
+
+  if (result.error) {
+    if (errorElement) {
+      errorElement.textContent = getErrorMessage(result.error);
+      errorElement.hidden = false;
+    }
+    if (button) {
+      button.disabled = false;
+      button.textContent = "Simpan fitur";
+    }
+    return;
+  }
+
+  editingFeatureId = null;
+  $("feature-form-container").innerHTML = "";
+  showToast(existingFeature ? "Fitur berhasil diperbarui." : "Fitur berhasil ditambahkan.", "success");
+  await loadProjectFeatures(activeProject.id);
+}
+
+async function updateFeatureStatus(featureId) {
+  if (!activeProject) return;
+  const feature = featureRows.find((item) => item.id === featureId);
+  if (!feature) return;
+
+  const nextStatus = feature.status === "Selesai" ? "Belum Dikerjakan" : "Selesai";
+  const { error } = await supabase.from("features")
+    .update({ status: nextStatus, updated_at: new Date().toISOString() })
+    .eq("id", featureId)
+    .eq("project_id", activeProject.id);
+
+  if (error) {
+    showToast("Status fitur gagal diperbarui: " + getErrorMessage(error), "error");
+    return;
+  }
+
+  showToast(nextStatus === "Selesai" ? "Fitur ditandai selesai." : "Fitur ditandai belum dikerjakan.", "success");
+  await loadProjectFeatures(activeProject.id);
+}
+
+async function deleteFeature(featureId) {
+  if (!activeProject) return;
+  const feature = featureRows.find((item) => item.id === featureId);
+  if (!feature || !window.confirm(`Hapus fitur "${feature.name}"? Tindakan ini tidak bisa dibatalkan.`)) return;
+
+  const { error } = await supabase.from("features")
+    .delete()
+    .eq("id", featureId)
+    .eq("project_id", activeProject.id);
+
+  if (error) {
+    showToast("Fitur gagal dihapus: " + getErrorMessage(error), "error");
+    return;
+  }
+
+  showToast("Fitur berhasil dihapus.", "success");
+  await loadProjectFeatures(activeProject.id);
 }
 
 function setProjectDetailTab(tab) {
