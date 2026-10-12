@@ -2117,3 +2117,46 @@ input:focus, select:focus, textarea:focus { border-color: #16835d; box-shadow: 0
   }
 }
 
+/* Unified dashboard palette: use the app's existing green brand */
+#page-home {
+  --dashboard-ink: var(--text, #1f2937);
+  --dashboard-muted: var(--text-muted, #6b7280);
+  --dashboard-line: var(--border, #e5e7eb);
+}
+#page-home .stat-card .stat-icon,
+#page-home .stat-total .stat-icon,
+#page-home .stat-active .stat-icon,
+#page-home .stat-revision .stat-icon,
+#page-home .stat-completed .stat-icon {
+  color: var(--primary-dark, #15803d);
+  background: var(--primary-soft, #e8f5e9);
+}
+#page-home .stat-card,
+#page-home .content-card,
+#dashboard-workspace-panel {
+  border-color: var(--border, #e5e7eb);
+  background: var(--surface, #fff);
+}
+#page-home .stat-card strong,
+#page-home .dashboard-intro h2,
+#page-home .section-heading h2,
+#dashboard-workspace-panel .dashboard-workspace-summary strong {
+  color: var(--text, #1f2937);
+}
+#page-home .stat-card span,
+#page-home .dashboard-intro p,
+#page-home .section-heading p,
+#dashboard-workspace-panel .dashboard-workspace-summary small,
+#dashboard-workspace-panel .dashboard-workspace-toggle {
+  color: var(--text-muted, #6b7280);
+}
+#page-home .text-button {
+  color: var(--primary-dark, #15803d);
+}
+#page-home .stat-total,
+#page-home .stat-active,
+#page-home .stat-revision,
+#page-home .stat-completed {
+  border-top-color: var(--border, #e5e7eb);
+}
+
