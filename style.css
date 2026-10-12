@@ -2751,3 +2751,37 @@ tr:hover td { background: #fbfcfb; }
 #page-projects .project-table-actions button { margin-right:10px; padding:4px 0; font-size:12px; }
 #page-projects .project-table-actions-heading { text-align:right; }
 @media (max-width:700px) { #page-projects .project-table-wrap { border-radius:10px; } #page-projects .project-table th, #page-projects .project-table td { padding:12px; } }
+
+
+/* Data Proyek: kontrol pencarian dan filter dibuat lebih ringkas */
+#page-projects .project-toolbar {
+  grid-template-columns: minmax(180px, 1.35fr) minmax(145px, .8fr) minmax(145px, .8fr);
+  gap: 10px;
+  padding: 12px;
+  margin-bottom: 14px;
+  border-radius: 12px;
+}
+#page-projects .project-toolbar .form-group { gap: 5px; }
+#page-projects .project-toolbar label { font-size: 11px; line-height: 1.35; }
+#page-projects .project-toolbar input,
+#page-projects .project-toolbar select {
+  min-height: 36px;
+  height: 36px;
+  padding: 7px 10px;
+  font-size: 12px;
+  border-radius: 8px;
+}
+@media (max-width: 700px) {
+  #page-projects .project-toolbar {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 9px;
+    padding: 10px;
+    margin-bottom: 12px;
+  }
+  #page-projects .project-toolbar .search-group { grid-column: 1 / -1; }
+  #page-projects .project-toolbar input,
+  #page-projects .project-toolbar select {
+    min-height: 36px;
+    height: 36px;
+  }
+}
