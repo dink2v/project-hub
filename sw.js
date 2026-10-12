@@ -1,5 +1,5 @@
 
-const CACHE_NAME = "project-hub-v40";
+const CACHE_NAME = "project-hub-v41";
 const APP_FILES = [
   "./",
   "./index.html",
