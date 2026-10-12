@@ -11,7 +11,7 @@
 
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="style.css?v=33">
+  <link rel="stylesheet" href="style.css?v=34">
 </head>
 
 <body>
@@ -418,6 +418,16 @@
             <button id="add-project-button" class="primary-button" type="button">
               + Tambah Proyek
             </button>
+          </div>
+
+          <div class="project-overview-heading">
+            <div><h3>Ringkasan Proyek</h3><p>Pantau jumlah proyek dan status pengerjaan.</p></div>
+          </div>
+          <div id="project-stats-grid" class="stats-grid project-stats-grid" aria-label="Statistik proyek">
+            <article class="stat-card project-stat-total"><div class="stat-icon" aria-hidden="true">▤</div><span>Total Proyek</span><strong id="project-stat-total">0</strong></article>
+            <article class="stat-card project-stat-planning"><div class="stat-icon" aria-hidden="true">◷</div><span>Perencanaan</span><strong id="project-stat-planning">0</strong></article>
+            <article class="stat-card project-stat-active"><div class="stat-icon" aria-hidden="true">↗</div><span>Sedang Dikerjakan</span><strong id="project-stat-active">0</strong></article>
+            <article class="stat-card project-stat-completed"><div class="stat-icon" aria-hidden="true">✓</div><span>Selesai</span><strong id="project-stat-completed">0</strong></article>
           </div>
 
           <div class="project-toolbar">
