@@ -1763,6 +1763,8 @@ document.querySelectorAll("[data-tab]").forEach((button) => {
   button.addEventListener("click", () => setProjectDetailTab(button.dataset.tab));
 });
 
+let modalReturnFocus = null;
+
 function openProjectForm(project = null) {
   const backdrop = document.getElementById("modal-backdrop");
   const title = document.getElementById("modal-title");
@@ -1772,6 +1774,12 @@ function openProjectForm(project = null) {
   if (!backdrop || !title || !body || !footer) {
     showToast("Komponen formulir proyek tidak ditemukan.");
     return;
+  }
+
+  if (backdrop.classList.contains("hidden")) {
+    modalReturnFocus = document.activeElement instanceof HTMLElement
+      ? document.activeElement
+      : null;
   }
 
   const isEditing = Boolean(project);
@@ -1849,7 +1857,16 @@ function openProjectForm(project = null) {
 }
 
 function closeProjectForm() {
-  document.getElementById("modal-backdrop")?.classList.add("hidden");
+  const backdrop = document.getElementById("modal-backdrop");
+  if (!backdrop || backdrop.classList.contains("hidden")) return;
+
+  backdrop.classList.add("hidden");
+
+  const returnTarget = modalReturnFocus;
+  modalReturnFocus = null;
+  if (returnTarget?.isConnected) {
+    requestAnimationFrame(() => returnTarget.focus());
+  }
 }
 
 async function saveProject(existingProject = null) {
@@ -2022,9 +2039,47 @@ document.getElementById("project-status-filter")
 document.getElementById("project-sort")
   ?.addEventListener("change", renderProjectCards);
 
-/* Tutup modal */
+/* Tutup modal dan dukungan keyboard */
 document.getElementById("modal-close-button")
   ?.addEventListener("click", closeProjectForm);
+
+document.addEventListener("keydown", (event) => {
+  const backdrop = document.getElementById("modal-backdrop");
+  if (!backdrop || backdrop.classList.contains("hidden")) return;
+
+  if (event.key === "Escape") {
+    event.preventDefault();
+    closeProjectForm();
+    return;
+  }
+
+  if (event.key !== "Tab") return;
+
+  const focusable = Array.from(backdrop.querySelectorAll(
+    'button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), a[href], [tabindex]:not([tabindex="-1"])'
+  )).filter((element) => element instanceof HTMLElement &&
+    element.getClientRects().length > 0 &&
+    element.getAttribute("aria-hidden") !== "true");
+
+  if (focusable.length === 0) {
+    event.preventDefault();
+    backdrop.querySelector(".modal-card")?.focus();
+    return;
+  }
+
+  const first = focusable[0];
+  const last = focusable[focusable.length - 1];
+
+  if (event.shiftKey && (document.activeElement === first ||
+      !backdrop.contains(document.activeElement))) {
+    event.preventDefault();
+    last.focus();
+  } else if (!event.shiftKey &&
+      (document.activeElement === last || !backdrop.contains(document.activeElement))) {
+    event.preventDefault();
+    first.focus();
+  }
+});
 
 document.getElementById("modal-backdrop")
   ?.addEventListener("click", (event) => {
