@@ -1893,10 +1893,18 @@ async function saveProject(existingProject = null) {
       .eq("id", existingProject.id)
       .eq("workspace_id", currentWorkspace.id);
   } else {
+    // Kolom projects.code wajib diisi dan tidak memiliki default di database.
+    // Buat kode unik di sisi aplikasi tanpa mengubah skema atau RLS.
+    const projectCode = `PRJ-${Date.now().toString(36).toUpperCase()}-${Math.random()
+      .toString(36)
+      .slice(2, 6)
+      .toUpperCase()}`;
+
     result = await supabase
       .from("projects")
       .insert({
         workspace_id: currentWorkspace.id,
+        code: projectCode,
         name,
         description,
         status,
