@@ -1674,6 +1674,14 @@ async function saveProject(existingProject = null) {
 
   await loadProjects();
 
+  if (existingProject && activeProject &&
+      String(activeProject.id) === String(existingProject.id)) {
+    activeProject = projects.find(
+      (item) => String(item.id) === String(existingProject.id)
+    ) || activeProject;
+    renderProjectDetail();
+  }
+
   if (!existingProject) {
     const createdProject = projects.find(
       (item) => item.name === name
