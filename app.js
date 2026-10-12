@@ -1257,49 +1257,41 @@ function renderProjectCards() {
     return;
   }
 
-  container.innerHTML = filteredProjects.map((project) => {
-    const status = getProjectStatus(project);
-    const date = formatProjectDate(
-      project.updated_at || project.created_at
-    );
-
-    return `
-      <article class="project-card">
-        <div class="project-card-header">
-          <div>
-            <h3>${escapeHtml(project.name || "Tanpa nama")}</h3>
-            <span class="badge ${getStatusClass(status)}">
-              ${escapeHtml(status)}
-            </span>
-          </div>
-
-          <button
-            type="button"
-            class="icon-button"
-            data-project-edit="${escapeHtml(project.id)}"
-            aria-label="Edit proyek"
-            title="Edit proyek"
-          >✎</button>
-        </div>
-
-        <p class="project-description">
-          ${escapeHtml(project.description || "Belum ada deskripsi.")}
-        </p>
-
-        <div class="project-card-footer">
-          <span>Diperbarui ${escapeHtml(date)}</span>
-
-          <button
-            type="button"
-            class="text-button"
-            data-project-open="${escapeHtml(project.id)}"
-          >
-            Lihat detail →
-          </button>
-        </div>
-      </article>
-    `;
-  }).join("");
+  container.innerHTML = `
+    <div class="project-table-wrap">
+      <table class="project-table">
+        <thead>
+          <tr>
+            <th scope="col">Proyek</th>
+            <th scope="col">Status</th>
+            <th scope="col">Terakhir diperbarui</th>
+            <th scope="col" class="project-table-actions-heading">Aksi</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${filteredProjects.map((project) => {
+            const status = getProjectStatus(project);
+            const date = formatProjectDate(project.updated_at || project.created_at);
+            const description = project.description?.trim() || "Belum ada deskripsi.";
+            return `
+              <tr>
+                <td class="project-table-main">
+                  <strong>${escapeHtml(project.name || "Tanpa nama")}</strong>
+                  <p>${escapeHtml(description)}</p>
+                </td>
+                <td><span class="badge ${getStatusClass(status)}">${escapeHtml(status)}</span></td>
+                <td class="project-table-date">${escapeHtml(date)}</td>
+                <td class="project-table-actions">
+                  <button type="button" class="text-button" data-project-open="${escapeHtml(project.id)}">Detail</button>
+                  <button type="button" class="text-button" data-project-edit="${escapeHtml(project.id)}">Edit</button>
+                </td>
+              </tr>
+            `;
+          }).join("")}
+        </tbody>
+      </table>
+    </div>
+  `;
 
   container.querySelectorAll("[data-project-edit]").forEach((button) => {
     button.addEventListener("click", () => {
