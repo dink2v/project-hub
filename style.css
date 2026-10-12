@@ -3391,3 +3391,57 @@ input[type="search"]::-webkit-search-cancel-button {
     transition: none !important;
   }
 }
+
+
+/* Compact fix — area Cari Proyek */
+#page-projects .project-toolbar {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) minmax(130px, 180px) minmax(150px, 200px);
+  align-items: end;
+  width: 100%;
+  gap: 9px;
+  padding: 10px 12px;
+}
+#page-projects .project-toolbar .search-group {
+  min-width: 0;
+  max-width: 100%;
+  grid-column: auto;
+}
+#page-projects .project-toolbar .search-group input {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  height: 34px;
+  min-height: 34px;
+  padding: 6px 10px;
+  font-size: 12px;
+}
+#page-projects .project-toolbar .form-group {
+  min-width: 0;
+  gap: 4px;
+}
+#page-projects .project-toolbar label {
+  font-size: 11px;
+  line-height: 1.3;
+}
+#page-projects .project-toolbar select {
+  height: 34px;
+  min-height: 34px;
+  padding: 6px 9px;
+  font-size: 12px;
+}
+@media (max-width: 700px) {
+  #page-projects .project-toolbar {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 8px;
+    padding: 9px;
+  }
+  #page-projects .project-toolbar .search-group {
+    grid-column: 1 / -1;
+  }
+  #page-projects .project-toolbar .search-group input,
+  #page-projects .project-toolbar select {
+    height: 36px;
+    min-height: 36px;
+  }
+}
