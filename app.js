@@ -1225,7 +1225,20 @@ function getFilteredProjects() {
   return result;
 }
 
+function renderProjectStats() {
+  const total = document.getElementById("project-stat-total");
+  const planning = document.getElementById("project-stat-planning");
+  const active = document.getElementById("project-stat-active");
+  const completed = document.getElementById("project-stat-completed");
+
+  if (total) total.textContent = String(projects.length);
+  if (planning) planning.textContent = String(projects.filter((project) => getProjectStatus(project) === "Perencanaan").length);
+  if (active) active.textContent = String(projects.filter((project) => getProjectStatus(project) === "Sedang Dikerjakan").length);
+  if (completed) completed.textContent = String(projects.filter((project) => getProjectStatus(project) === "Selesai").length);
+}
+
 function renderProjectCards() {
+  renderProjectStats();
   const container = document.getElementById("project-list");
 
   if (!container) return;
@@ -1336,6 +1349,8 @@ async function loadProjects() {
   const container = document.getElementById("project-list");
 
   if (!currentUser || !currentWorkspace) {
+    projects = [];
+    renderProjectStats();
     if (container) {
       container.innerHTML = "<p>Pilih workspace terlebih dahulu.</p>";
     }
@@ -1353,6 +1368,7 @@ async function loadProjects() {
 
   if (error) {
     projects = [];
+    renderProjectStats();
 
     if (container) {
       container.innerHTML = `
