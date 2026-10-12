@@ -3487,3 +3487,25 @@ input[type="search"]::-webkit-search-cancel-button {
     min-height: 34px;
   }
 }
+
+
+/* DATA PROYEK — dashboard ringkas dengan kartu statistik */
+#page-projects .project-overview-heading { display:flex; align-items:end; justify-content:space-between; margin:0 0 11px; }
+#page-projects .project-overview-heading h3 { margin:0; color:var(--ph-ink,#1f2937); font-size:14px; font-weight:750; letter-spacing:-.02em; }
+#page-projects .project-overview-heading p { margin:4px 0 0; color:var(--ph-muted,#6b7280); font-size:12px; line-height:1.5; }
+#page-projects .project-stats-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; margin:0 0 18px; }
+#page-projects .project-stats-grid .stat-card { display:grid; grid-template-columns:34px minmax(0,1fr); grid-template-rows:auto auto; align-items:center; column-gap:10px; row-gap:5px; min-width:0; min-height:104px; padding:16px; border:1px solid var(--ph-line,#e5e7eb); border-radius:14px; background:var(--ph-card,#fff); box-shadow:0 4px 14px rgba(25,35,30,.035); }
+#page-projects .project-stats-grid .stat-icon { grid-column:1; grid-row:1 / span 2; display:grid; place-items:center; width:34px; height:34px; border-radius:10px; color:#526b62; background:#edf2ef; font-size:16px; }
+#page-projects .project-stats-grid .stat-card span { min-width:0; color:var(--ph-muted,#6b7280); font-size:11px; font-weight:650; line-height:1.35; }
+#page-projects .project-stats-grid .stat-card strong { color:var(--ph-ink,#1f2937); font-size:25px; font-weight:780; line-height:1; letter-spacing:-.04em; font-variant-numeric:tabular-nums; }
+#page-projects .project-stat-active .stat-icon { color:#416c91; background:#edf4fa; }
+#page-projects .project-stat-completed .stat-icon { color:#35765b; background:#eaf5ee; }
+#page-projects .project-stat-planning .stat-icon { color:#8b7042; background:#f8f2e7; }
+@media(max-width:900px) { #page-projects .project-stats-grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; } }
+@media(max-width:480px) {
+ #page-projects .project-stats-grid { gap:8px; margin-bottom:14px; }
+ #page-projects .project-stats-grid .stat-card { min-height:88px; grid-template-columns:28px minmax(0,1fr); column-gap:8px; padding:11px; }
+ #page-projects .project-stats-grid .stat-icon { width:28px; height:28px; border-radius:8px; font-size:13px; }
+ #page-projects .project-stats-grid .stat-card span { font-size:10px; }
+ #page-projects .project-stats-grid .stat-card strong { font-size:22px; }
+}
