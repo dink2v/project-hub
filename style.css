@@ -2160,3 +2160,11 @@ input:focus, select:focus, textarea:focus { border-color: #16835d; box-shadow: 0
   border-top-color: var(--border, #e5e7eb);
 }
 
+
+
+/* Calm muted palette override */
+:root{--primary:#718b82;--primary-dark:#526b62;--primary-soft:#edf2ef;--background:#f6f7f6;--surface:#fff;--text:#303936;--text-muted:#78817d;--border:#e4e8e5;--shadow:0 6px 22px rgba(40,52,46,.045)}
+input:focus,textarea:focus,select:focus{border-color:#9aafa6;box-shadow:0 0 0 3px rgba(113,139,130,.10)}
+#auth-screen,.auth-screen{background:radial-gradient(circle at 10% 10%,rgba(113,139,130,.09),transparent 34%),radial-gradient(circle at 90% 90%,rgba(155,178,168,.07),transparent 32%),#f6f7f6}
+#page-home .stat-card .stat-icon,#page-home .stat-total .stat-icon,#page-home .stat-active .stat-icon,#page-home .stat-revision .stat-icon,#page-home .stat-completed .stat-icon{color:#526b62;background:#edf2ef}
+#page-home .text-button,a{color:#526b62}
