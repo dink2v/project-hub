@@ -1803,10 +1803,10 @@ function openProjectForm(project = null) {
         <label for="project-status">Status</label>
         <select id="project-status" name="status" required>
           ${[
-            "Belum Dikerjakan",
-            "Sedang Dikerjakan",
-            "Revisi",
-            "Selesai"
+            "Perencanaan",
+            "Aktif",
+            "Selesai",
+            "Diarsipkan"
           ].map((status) => `
             <option
               value="${escapeHtml(status)}"
