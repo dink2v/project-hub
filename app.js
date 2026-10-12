@@ -435,16 +435,21 @@ function ensureDashboardWorkspacePanel() {
     panel.id = "dashboard-workspace-panel";
     panel.className = "content-card";
     panel.innerHTML = `
-      <div class="section-heading">
-        <div>
-          <h2>Workspace Saya</h2>
-          <p>Kelola ruang kerja dan anggota langsung dari dashboard.</p>
+      <details class="dashboard-workspace-details">
+        <summary class="dashboard-workspace-summary">
+          <span>
+            <strong>Workspace Saya</strong>
+            <small>Kelola workspace, anggota, atau undangan</small>
+          </span>
+          <span class="dashboard-workspace-toggle">Kelola <span aria-hidden="true">⌄</span></span>
+        </summary>
+        <div class="dashboard-workspace-body">
+          <div id="dashboard-workspace-list" class="workspace-list"></div>
+          <div id="dashboard-workspace-actions" class="dashboard-workspace-actions"></div>
+          <div id="dashboard-workspace-create-slot"></div>
+          <div id="dashboard-workspace-join-slot"></div>
         </div>
-      </div>
-      <div id="dashboard-workspace-list" class="workspace-list"></div>
-      <div id="dashboard-workspace-actions" class="dashboard-workspace-actions"></div>
-      <div id="dashboard-workspace-create-slot"></div>
-      <div id="dashboard-workspace-join-slot"></div>
+      </details>
     `;
 
     const stats = homePage.querySelector(".stats-grid");
