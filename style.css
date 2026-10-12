@@ -3620,3 +3620,68 @@ input[type="search"]::-webkit-search-cancel-button {
   #page-projects .project-table tbody td,
   #page-projects .project-table .project-table-actions .text-button { transition: none; }
 }
+
+
+/* DATA PROYEK — penyempurnaan minimalis kotak Cari Proyek */
+#page-projects .project-toolbar {
+  display: grid !important;
+  grid-template-columns: minmax(240px, 280px) minmax(132px, 150px) minmax(150px, 175px);
+  align-items: end;
+  width: fit-content;
+  max-width: 100%;
+  gap: 12px;
+  padding: 12px;
+  margin: 0 0 16px;
+  background: #fff;
+  border: 1px solid #e6eaf0;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(20, 35, 28, .025);
+}
+#page-projects .project-toolbar .form-group {
+  min-width: 0;
+  gap: 5px;
+}
+#page-projects .project-toolbar label {
+  color: #667085;
+  font-size: 11px;
+  font-weight: 650;
+  line-height: 1.35;
+}
+#page-projects .project-toolbar input,
+#page-projects .project-toolbar select {
+  width: 100%;
+  min-width: 0;
+  height: 36px;
+  min-height: 36px;
+  padding: 7px 10px;
+  color: #344054;
+  background-color: #fbfcfd;
+  border: 1px solid #e1e6ec;
+  border-radius: 8px;
+  font-size: 12px;
+  box-shadow: none;
+}
+#page-projects .project-toolbar input::placeholder { color: #98a2b3; }
+#page-projects .project-toolbar input:focus,
+#page-projects .project-toolbar select:focus {
+  background: #fff;
+  border-color: #8cae9b;
+  box-shadow: 0 0 0 3px rgba(113, 139, 130, .12);
+}
+@media (max-width: 700px) {
+  #page-projects .project-toolbar {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+    gap: 9px;
+    padding: 10px;
+    margin-bottom: 14px;
+  }
+  #page-projects .project-toolbar .search-group { grid-column: 1 / -1; }
+  #page-projects .project-toolbar input,
+  #page-projects .project-toolbar select { height: 37px; min-height: 37px; }
+}
+@media (max-width: 360px) {
+  #page-projects .project-toolbar { grid-template-columns: minmax(0, 1fr); }
+  #page-projects .project-toolbar .search-group { grid-column: auto; }
+}
