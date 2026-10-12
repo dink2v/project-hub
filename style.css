@@ -3133,3 +3133,147 @@ button:not(:disabled):active { transform: translateY(1px); }
     transition-duration: .01ms !important;
   }
 }
+
+
+/* =========================================================
+   UI/UX POLISH 2 — MICRO-INTERAKSI, FEEDBACK, AKSESIBILITAS
+   CSS-only: tidak mengubah data, autentikasi, atau alur fitur.
+   ========================================================= */
+:root {
+  --ph-focus-ring: rgba(69, 75, 84, .22);
+  --ph-hover-surface: #f4f5f6;
+}
+:where(button, a, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 3px solid var(--ph-focus-ring);
+  outline-offset: 3px;
+}
+button:disabled, button[aria-disabled="true"] {
+  cursor: not-allowed;
+  opacity: .62;
+  box-shadow: none;
+  transform: none !important;
+}
+button:not(:disabled) {
+  transition:
+    color .18s ease,
+    background-color .18s ease,
+    border-color .18s ease,
+    box-shadow .18s ease,
+    transform .18s ease;
+}
+button:not(:disabled):active {
+  transform: translateY(1px) scale(.99);
+}
+.primary-button:not(:disabled):hover,
+.secondary-button:not(:disabled):hover,
+.danger-button:not(:disabled):hover {
+  box-shadow: 0 5px 14px rgba(37,42,49,.09);
+}
+.project-toolbar {
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: #fff;
+}
+#page-projects .project-list {
+  min-width: 0;
+}
+#page-projects .project-table-wrap,
+#page-projects .content-card:has(.project-table),
+.content-card:has(table) {
+  border-radius: 13px;
+  scrollbar-width: thin;
+  scrollbar-color: #c9cdd3 transparent;
+}
+#page-projects .project-table tbody tr,
+table tbody tr {
+  transition: background-color .16s ease;
+}
+#page-projects .project-table tbody tr:hover td,
+table tbody tr:hover td {
+  background-color: #f7f8f9;
+}
+#page-projects .project-table td:first-child,
+#page-projects .project-table th:first-child {
+  padding-left: 18px;
+}
+#page-projects .project-table td:last-child,
+#page-projects .project-table th:last-child {
+  padding-right: 18px;
+}
+.toast-container {
+  position: fixed;
+  z-index: 1000;
+  right: 20px;
+  bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+  width: min(360px, calc(100vw - 40px));
+  pointer-events: none;
+}
+.toast, .toast-message {
+  position: relative;
+  right: auto;
+  bottom: auto;
+  width: 100%;
+  max-width: none;
+  padding: 13px 16px;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 13px;
+  background: #303640;
+  color: #fff;
+  box-shadow: 0 12px 30px rgba(37,42,49,.18);
+  font-size: 13px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+  pointer-events: auto;
+  animation: ph-toast-enter .22s ease-out both;
+}
+.toast.success, .toast-message.success {
+  background: #354b3e;
+  border-color: #54715f;
+}
+.toast.error, .toast-message.error {
+  background: #6f3538;
+  border-color: #925458;
+}
+@keyframes ph-toast-enter {
+  from { opacity: 0; transform: translateY(8px) scale(.985); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.toast.is-leaving, .toast-message.is-leaving {
+  opacity: 0;
+  transform: translateY(5px);
+  transition: opacity .16s ease, transform .16s ease;
+}
+.empty-state, .loading, .loading-state {
+  border-radius: 12px;
+  color: var(--text-muted);
+}
+input[type="search"] {
+  padding-inline-start: 14px;
+}
+input[type="search"]::-webkit-search-cancel-button {
+  cursor: pointer;
+}
+::selection {
+  color: #252a31;
+  background: #e1e4e8;
+}
+@media (max-width: 700px) {
+  .project-toolbar {
+    padding: 13px;
+    border-radius: 12px;
+  }
+  .toast-container {
+    right: 12px;
+    bottom: max(12px, env(safe-area-inset-bottom));
+    width: calc(100vw - 24px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .toast, .toast-message { animation: none !important; }
+  button:not(:disabled):active { transform: none; }
+}
