@@ -2048,3 +2048,72 @@ input:focus, select:focus, textarea:focus { border-color: #16835d; box-shadow: 0
   #page-home .dashboard-intro > div { flex-basis: 100%; }
   #page-home #home-add-project { width: 100%; white-space: nowrap; }
 }
+
+/* Dashboard workspace panel: compact and collapsible */
+#dashboard-workspace-panel {
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: 14px;
+}
+#dashboard-workspace-panel .dashboard-workspace-details {
+  margin: 0;
+}
+#dashboard-workspace-panel .dashboard-workspace-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 18px;
+  cursor: pointer;
+  list-style: none;
+}
+#dashboard-workspace-panel .dashboard-workspace-summary::-webkit-details-marker {
+  display: none;
+}
+#dashboard-workspace-panel .dashboard-workspace-summary > span:first-child {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+#dashboard-workspace-panel .dashboard-workspace-summary strong {
+  font-size: 14px;
+  font-weight: 650;
+}
+#dashboard-workspace-panel .dashboard-workspace-summary small {
+  color: var(--muted, #6b7280);
+  font-size: 12px;
+}
+#dashboard-workspace-panel .dashboard-workspace-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  color: var(--muted, #6b7280);
+  font-size: 12px;
+}
+#dashboard-workspace-panel .dashboard-workspace-details[open] .dashboard-workspace-toggle > span {
+  transform: rotate(180deg);
+}
+#dashboard-workspace-panel .dashboard-workspace-toggle > span {
+  display: inline-block;
+  transition: transform .18s ease;
+}
+#dashboard-workspace-panel .dashboard-workspace-body {
+  display: grid;
+  gap: 14px;
+  padding: 0 18px 18px;
+}
+#dashboard-workspace-panel .dashboard-workspace-body .create-workspace-card,
+#dashboard-workspace-panel .dashboard-workspace-body .join-workspace-card {
+  margin: 0;
+}
+@media (max-width: 600px) {
+  #dashboard-workspace-panel .dashboard-workspace-summary {
+    padding: 12px 14px;
+  }
+  #dashboard-workspace-panel .dashboard-workspace-body {
+    padding: 0 14px 14px;
+  }
+}
+
