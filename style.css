@@ -2696,3 +2696,41 @@ tr:hover td { background: #fbfcfb; }
   .detail-info-heading { align-items: flex-start; flex-direction: column; }
   .detail-next-step { padding: 16px; }
 }
+
+
+/* Daftar fitur pada Detail Proyek */
+.features-panel { display: grid; gap: 20px; }
+.features-panel-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+.features-panel-heading h3 { margin: 5px 0 6px; color: var(--text); }
+.features-panel-heading p { margin: 0; color: var(--text-muted); font-size: 13px; }
+.feature-form { display: grid; gap: 14px; padding: 18px; border: 1px solid var(--border); border-radius: 14px; background: var(--surface, #fff); }
+.feature-form h4 { margin: 0; color: var(--text); }
+.feature-form .form-group { margin: 0; }
+.feature-form-actions { display: flex; justify-content: flex-end; gap: 10px; }
+.feature-form-actions button, .feature-item-actions button, #retry-load-features { padding: 8px 12px; border: 1px solid var(--border); border-radius: 9px; background: var(--surface, #fff); color: var(--text); cursor: pointer; }
+.feature-form-actions .primary-button { background: var(--primary, #6b806f); color: white; border-color: transparent; }
+.feature-list-container { display: grid; gap: 12px; }
+.feature-summary { display: flex; justify-content: space-between; color: var(--text-muted); font-size: 12px; }
+.feature-list { display: grid; gap: 10px; }
+.feature-item { display: flex; justify-content: space-between; gap: 14px; padding: 16px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface, #fff); }
+.feature-item-main { display: flex; align-items: flex-start; gap: 12px; min-width: 0; }
+.feature-status-toggle { flex: 0 0 28px; width: 28px; height: 28px; border: 1px solid var(--border); border-radius: 50%; background: transparent; color: var(--text-muted); cursor: pointer; }
+.feature-item.is-complete .feature-status-toggle { background: #e8f2e9; border-color: #b9d4bd; color: #476d4d; }
+.feature-item-copy { min-width: 0; }
+.feature-item-copy h4 { margin: 2px 0 6px; color: var(--text); overflow-wrap: anywhere; }
+.feature-item.is-complete .feature-item-copy h4 { text-decoration: line-through; color: var(--text-muted); }
+.feature-item-copy p { margin: 0 0 8px; color: var(--text-muted); font-size: 13px; line-height: 1.6; overflow-wrap: anywhere; }
+.feature-item-copy small { display: block; margin-bottom: 8px; color: var(--text-muted); }
+.feature-item-copy .badge { display: inline-flex; margin-top: 2px; }
+.feature-item-actions { display: flex; align-items: flex-start; gap: 6px; flex-shrink: 0; }
+.feature-item-actions button { font-size: 12px; }
+.feature-item-actions .feature-delete-button { color: #a34e4e; }
+.feature-empty-state { padding: 34px 18px; text-align: center; border: 1px dashed var(--border); border-radius: 12px; }
+.feature-empty-state > span { display: block; font-size: 24px; color: var(--text-muted); }
+.feature-empty-state strong { display: block; margin-top: 8px; color: var(--text); }
+.feature-empty-state p { margin: 6px 0 0; color: var(--text-muted); font-size: 13px; }
+@media (max-width: 640px) {
+  .features-panel-heading { flex-direction: column; }
+  .feature-item { flex-direction: column; }
+  .feature-item-actions { justify-content: flex-end; }
+}
