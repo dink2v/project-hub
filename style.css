@@ -2199,3 +2199,140 @@ input:focus, select:focus, textarea:focus { border-color: #16835d; box-shadow: 0
     white-space: nowrap;
   }
 }
+
+
+/* Dashboard responsive layout: desktop, tablet, and mobile */
+@media (min-width: 1200px) {
+  #page-home {
+    max-width: 1240px;
+  }
+
+  #page-home .stats-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+    margin-bottom: 30px;
+  }
+
+  #page-home .stat-card {
+    min-height: 98px;
+    padding: 19px 20px;
+  }
+
+  #page-home .dashboard-intro {
+    margin-bottom: 18px;
+  }
+
+  #page-home .content-card {
+    padding: 22px 24px;
+    margin-bottom: 16px;
+  }
+}
+
+@media (min-width: 761px) and (max-width: 1024px) {
+  #page-home .stats-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 9px;
+    margin-bottom: 22px;
+  }
+
+  #page-home .stat-card {
+    grid-template-columns: 28px minmax(0, 1fr);
+    column-gap: 8px;
+    min-height: 82px;
+    padding: 12px 10px;
+  }
+
+  #page-home .stat-card .stat-icon {
+    width: 28px;
+    height: 28px;
+    font-size: 14px;
+  }
+
+  #page-home .stat-card span {
+    font-size: 10px;
+  }
+
+  #page-home .stat-card strong {
+    font-size: 21px;
+  }
+
+  #page-home .content-card {
+    padding: 18px;
+  }
+}
+
+@media (max-width: 760px) {
+  #page-home .stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: stretch;
+  }
+
+  #page-home .stat-card {
+    min-width: 0;
+  }
+
+  #page-home .stat-card span {
+    overflow-wrap: anywhere;
+  }
+
+  #page-home .dashboard-intro {
+    flex-wrap: wrap;
+  }
+
+  #page-home .dashboard-intro > div {
+    flex: 1 1 145px;
+    min-width: 0;
+  }
+
+  #page-home #home-add-project {
+    flex: 0 0 auto;
+  }
+
+  #page-home .section-heading {
+    align-items: center;
+  }
+
+  #page-home .section-heading > div {
+    min-width: 0;
+  }
+
+  #page-home .section-heading p {
+    overflow-wrap: anywhere;
+  }
+
+  #page-home .recent-projects {
+    width: 100%;
+    overflow-wrap: anywhere;
+  }
+}
+
+@media (max-width: 380px) {
+  #page-home .stats-grid {
+    gap: 8px;
+  }
+
+  #page-home .stat-card {
+    min-height: 70px;
+    padding: 10px;
+  }
+
+  #page-home .stat-card span {
+    font-size: 10px;
+  }
+
+  #page-home .stat-card strong {
+    font-size: 21px;
+  }
+
+  #page-home .dashboard-intro {
+    gap: 10px;
+  }
+
+  #page-home .dashboard-intro > div {
+    flex-basis: 100%;
+  }
+
+  #page-home #home-add-project {
+    width: 100%;
+  }
+}
