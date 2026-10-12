@@ -3445,3 +3445,45 @@ input[type="search"]::-webkit-search-cancel-button {
     min-height: 36px;
   }
 }
+
+
+/* Final compact layout — shrink the entire project search/filter container */
+#page-projects .project-toolbar {
+  display: inline-grid !important;
+  grid-template-columns: minmax(190px, 260px) minmax(125px, 145px) minmax(140px, 165px);
+  width: fit-content;
+  max-width: 100%;
+  gap: 8px;
+  padding: 8px;
+  margin: 0 0 12px;
+  border-radius: 10px;
+  box-sizing: border-box;
+}
+#page-projects .project-toolbar .form-group { min-width: 0; gap: 3px; }
+#page-projects .project-toolbar label { font-size: 10px; line-height: 1.25; }
+#page-projects .project-toolbar input,
+#page-projects .project-toolbar select {
+  width: 100%;
+  min-width: 0;
+  height: 31px;
+  min-height: 31px;
+  padding: 5px 8px;
+  font-size: 11px;
+  border-radius: 7px;
+  box-sizing: border-box;
+}
+@media (max-width: 700px) {
+  #page-projects .project-toolbar {
+    display: grid !important;
+    width: 100%;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 7px;
+    padding: 8px;
+  }
+  #page-projects .project-toolbar .search-group { grid-column: 1 / -1; }
+  #page-projects .project-toolbar input,
+  #page-projects .project-toolbar select {
+    height: 34px;
+    min-height: 34px;
+  }
+}
