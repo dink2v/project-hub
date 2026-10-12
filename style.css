@@ -4,9 +4,9 @@
    ========================================= */
 
 :root {
-  --primary: #16a34a;
-  --primary-dark: #15803d;
-  --primary-soft: #e8f5e9;
+  --primary: #718b82;
+  --primary-dark: #526b62;
+  --primary-soft: #edf2ef;
   --background: #f7f9fc;
   --surface: #ffffff;
   --text: #1f2937;
@@ -152,7 +152,7 @@ a:hover {
   height: 52px;
   margin-bottom: 22px;
   color: #fff;
-  background: linear-gradient(135deg, #22c55e, #15803d);
+  background: linear-gradient(135deg, #9bb2a8, #526b62);
   border-radius: 15px;
   font-size: 20px;
   font-weight: 800;
@@ -264,8 +264,8 @@ a:hover {
 #auth-message:not(:empty),
 #otp-message:not(:empty) {
   padding: 10px 12px;
-  color: #166534;
-  background: #f0fdf4;
+  color: #526b62;
+  background: #f3f6f4;
   border-radius: 8px;
   overflow-wrap: anywhere;
 }
@@ -347,7 +347,7 @@ a:hover {
 .workspace-item:hover,
 .workspace-card:hover,
 #workspace-list > *:hover {
-  border-color: #86efac;
+  border-color: #dce6e0;
 }
 
 #new-workspace-name,
@@ -457,13 +457,13 @@ a:hover {
 .sidebar-nav button:hover,
 .sidebar [data-page]:hover {
   color: var(--primary-dark);
-  background: #f0fdf4;
+  background: #f3f6f4;
 }
 
 .sidebar nav button.active,
 .sidebar-nav button.active,
 .sidebar [data-page].active {
-  color: #166534;
+  color: #526b62;
   background: var(--primary-soft);
   font-weight: 700;
 }
@@ -511,7 +511,7 @@ a:hover {
   flex-shrink: 0;
   width: 39px;
   height: 39px;
-  color: #166534;
+  color: #526b62;
   background: var(--primary-soft);
   border-radius: 50%;
   font-weight: 750;
@@ -725,8 +725,8 @@ a:hover {
 .badge.active,
 .badge.sedang-dikerjakan,
 .status-active {
-  color: #166534;
-  background: #dcfce7;
+  color: #526b62;
+  background: #edf2ef;
 }
 
 .badge.revision,
@@ -1027,7 +1027,7 @@ tr:hover td {
 }
 
 .toast.success {
-  background: #166534;
+  background: #526b62;
 }
 
 .toast.error {
@@ -2128,8 +2128,8 @@ input:focus, select:focus, textarea:focus { border-color: #16835d; box-shadow: 0
 #page-home .stat-active .stat-icon,
 #page-home .stat-revision .stat-icon,
 #page-home .stat-completed .stat-icon {
-  color: var(--primary-dark, #15803d);
-  background: var(--primary-soft, #e8f5e9);
+  color: var(--primary-dark, #526b62);
+  background: var(--primary-soft, #edf2ef);
 }
 #page-home .stat-card,
 #page-home .content-card,
@@ -2151,7 +2151,7 @@ input:focus, select:focus, textarea:focus { border-color: #16835d; box-shadow: 0
   color: var(--text-muted, #6b7280);
 }
 #page-home .text-button {
-  color: var(--primary-dark, #15803d);
+  color: var(--primary-dark, #526b62);
 }
 #page-home .stat-total,
 #page-home .stat-active,
@@ -2168,3 +2168,8 @@ input:focus,textarea:focus,select:focus{border-color:#9aafa6;box-shadow:0 0 0 3p
 #auth-screen,.auth-screen{background:radial-gradient(circle at 10% 10%,rgba(113,139,130,.09),transparent 34%),radial-gradient(circle at 90% 90%,rgba(155,178,168,.07),transparent 32%),#f6f7f6}
 #page-home .stat-card .stat-icon,#page-home .stat-total .stat-icon,#page-home .stat-active .stat-icon,#page-home .stat-revision .stat-icon,#page-home .stat-completed .stat-icon{color:#526b62;background:#edf2ef}
 #page-home .text-button,a{color:#526b62}
+
+/* Force the muted sage accent on legacy hard-coded green UI states */
+button.primary-button,.primary-button,.btn-primary,.active-nav,.nav-link.active,.sidebar a.active,.bottom-nav a.active,.tab-button.active,.detail-tabs button.active{background-color:#718b82!important;border-color:#718b82!important;color:#fff!important}
+button.primary-button:hover,.primary-button:hover,.btn-primary:hover{background-color:#637b72!important}
+.badge-success,.status-success,.status-approved,.text-success{color:#526b62!important;background-color:#edf2ef!important;border-color:#dce6e0!important}
