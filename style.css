@@ -2988,3 +2988,148 @@ a:hover, .text-button:hover { color: #303640; }
   background: #eef0f2 !important;
 }
 .badge, .status-badge { border-color: #e2e4e8; }
+
+
+/* =========================================================
+   UI/UX POLISH — MINIMALIS NETRAL + ANIMASI RINGAN
+   Lapisan visual saja; tidak mengubah alur aplikasi/data.
+   ========================================================= */
+:root {
+  --primary: #454b54;
+  --primary-dark: #303640;
+  --primary-soft: #eef0f2;
+  --background: #f7f7f8;
+  --surface: #ffffff;
+  --text: #252a31;
+  --text-muted: #6b7280;
+  --border: #e2e4e8;
+  --shadow: 0 8px 24px rgba(37, 42, 49, .045);
+  --ph-sage: #454b54;
+  --ph-sage-dark: #303640;
+  --ph-sage-pale: #eef0f2;
+  --ph-ink: #252a31;
+  --ph-muted: #6b7280;
+  --ph-line: #e2e4e8;
+  --ph-canvas: #f7f7f8;
+  --ph-card: #ffffff;
+}
+body {
+  color: var(--text);
+  background: var(--background);
+  -webkit-font-smoothing: antialiased;
+}
+.sidebar, .topbar {
+  background: rgba(255,255,255,.94);
+  border-color: var(--border);
+}
+.topbar { backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
+.content-card, .stat-card, .project-card, .feature-card, .note-card,
+.revision-card, .activity-card, .settings-card, .project-toolbar,
+#dashboard-workspace-panel {
+  border-color: var(--border);
+  background: var(--surface);
+  box-shadow: 0 3px 12px rgba(37,42,49,.025);
+}
+.page-intro h2, .section-heading h2, .stat-card strong,
+.recent-project-copy strong, .settings-item strong {
+  color: var(--text);
+}
+.page-intro p, .section-heading p, .stat-card span,
+.settings-item p, .recent-project-copy small {
+  color: var(--text-muted);
+}
+.primary-button, .btn-primary, #home-add-project, #add-project-button,
+#invite-user-button, #create-workspace-button, #join-workspace-button,
+#auth-submit, #otp-submit, #save-project-button {
+  color: #fff;
+  background: var(--primary);
+  border-color: var(--primary);
+}
+.primary-button:hover, .btn-primary:hover, #home-add-project:hover,
+#add-project-button:hover, #invite-user-button:hover,
+#create-workspace-button:hover, #join-workspace-button:hover,
+#auth-submit:hover, #otp-submit:hover, #save-project-button:hover {
+  color: #fff;
+  background: var(--primary-dark);
+  border-color: var(--primary-dark);
+}
+.nav-item { transition: color .18s ease, background-color .18s ease, transform .18s ease; }
+.nav-item:hover { color: var(--primary-dark); background: #f2f3f5; }
+.nav-item.active, #sidebar-more-toggle.active, #sidebar-more-menu .nav-item.active {
+  color: var(--primary-dark);
+  background: var(--primary-soft);
+}
+.nav-item.active > span:first-child { color: var(--primary-dark); }
+#page-home .stat-card .stat-icon, #page-home .stat-total .stat-icon,
+#page-home .stat-active .stat-icon, #page-home .stat-revision .stat-icon,
+#page-home .stat-completed .stat-icon, .recent-project-icon {
+  color: var(--primary-dark);
+  background: var(--primary-soft);
+}
+#page-home .text-button, .text-button, a { color: var(--primary-dark); }
+#page-home .stat-card, .stat-card, .project-card, .content-card,
+.recent-project-item, .feature-card, .note-card, .revision-card,
+.activity-card, .settings-card, .detail-info-item {
+  transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease, background-color .2s ease;
+}
+#page-home .stat-card:hover, .stat-card:hover, .project-card:hover,
+.feature-card:hover, .note-card:hover, .revision-card:hover, .activity-card:hover {
+  border-color: #c8cdd4;
+  box-shadow: 0 9px 24px rgba(37,42,49,.065);
+  transform: translateY(-2px);
+}
+.recent-project-item:hover { background: #fafafb; border-color: #d3d7dd; }
+input, textarea, select {
+  border-color: #d9dde2;
+  transition: border-color .18s ease, box-shadow .18s ease, background-color .18s ease;
+}
+input:focus, textarea:focus, select:focus {
+  border-color: #737984;
+  box-shadow: 0 0 0 3px rgba(69,75,84,.11);
+}
+.mobile-nav:not(.hidden) {
+  background: rgba(255,255,255,.98);
+  border-color: var(--border);
+  box-shadow: 0 12px 26px rgba(37,42,49,.08);
+}
+.mobile-nav button {
+  color: #525965;
+  background: #f7f7f8;
+  border-color: var(--border);
+}
+.mobile-nav button.active {
+  color: #fff;
+  background: var(--primary);
+  border-color: var(--primary);
+}
+.badge, .status-badge { border-color: var(--border); }
+
+/* Animasi masuk singkat dan interaksi yang terasa responsif */
+@keyframes ph-page-enter {
+  from { opacity: 0; transform: translateY(7px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes ph-soft-appear {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.page:not(.hidden) { animation: ph-page-enter .24s ease-out both; }
+#page-home .stat-card { animation: ph-soft-appear .3s ease-out both; }
+#page-home .stat-card:nth-child(2) { animation-delay: 35ms; }
+#page-home .stat-card:nth-child(3) { animation-delay: 70ms; }
+#page-home .stat-card:nth-child(4) { animation-delay: 105ms; }
+button, .icon-button, .detail-tabs button, .project-card {
+  -webkit-tap-highlight-color: transparent;
+}
+button:not(:disabled):active { transform: translateY(1px); }
+.icon-button { transition: color .18s ease, background-color .18s ease, transform .18s ease; }
+.icon-button:hover { background-color: #eef0f2; }
+#modal-backdrop .modal-card { animation: ph-soft-appear .2s ease-out both; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: .01ms !important;
+  }
+}
