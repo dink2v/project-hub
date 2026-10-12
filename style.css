@@ -3685,3 +3685,31 @@ input[type="search"]::-webkit-search-cancel-button {
   #page-projects .project-toolbar { grid-template-columns: minmax(0, 1fr); }
   #page-projects .project-toolbar .search-group { grid-column: auto; }
 }
+
+
+/* DATA PROYEK — desktop mode: samakan tinggi kontrol pencarian */
+@media (min-width: 701px) {
+  #page-projects .project-toolbar {
+    grid-template-columns: minmax(180px, 240px) minmax(112px, 132px) minmax(128px, 150px) !important;
+    align-items: start !important;
+    gap: 10px !important;
+    padding: 10px !important;
+  }
+  #page-projects .project-toolbar .form-group,
+  #page-projects .project-toolbar .search-group {
+    align-self: start !important;
+    min-height: 0 !important;
+    height: auto !important;
+  }
+  #page-projects .project-toolbar input,
+  #page-projects .project-toolbar select,
+  #page-projects .project-toolbar textarea {
+    box-sizing: border-box !important;
+    height: 36px !important;
+    min-height: 36px !important;
+    max-height: 36px !important;
+    padding: 7px 9px !important;
+    line-height: 20px !important;
+    align-self: start !important;
+  }
+}
