@@ -3509,3 +3509,114 @@ input[type="search"]::-webkit-search-cancel-button {
  #page-projects .project-stats-grid .stat-card span { font-size:10px; }
  #page-projects .project-stats-grid .stat-card strong { font-size:22px; }
 }
+
+
+/* DATA PROYEK — tahap 2: tabel profesional dan aksi ringkas */
+#page-projects .project-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid #e5e9ee;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 5px 18px rgba(24, 39, 32, .035);
+}
+#page-projects .project-table {
+  width: 100%;
+  min-width: 680px;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+#page-projects .project-table thead th {
+  padding: 13px 15px;
+  border-bottom: 1px solid #e7ebef;
+  background: #f7f9fb;
+  color: #667085;
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: .055em;
+  text-align: left;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+#page-projects .project-table tbody td {
+  padding: 15px;
+  border-bottom: 1px solid #eef1f4;
+  background: #fff;
+  color: #475467;
+  font-size: 12px;
+  vertical-align: middle;
+  transition: background-color .16s ease;
+}
+#page-projects .project-table tbody tr:last-child td { border-bottom: 0; }
+#page-projects .project-table tbody tr:hover td { background: #f8fafc; }
+#page-projects .project-table .project-table-main { min-width: 250px; max-width: 460px; }
+#page-projects .project-table .project-table-main strong {
+  display: block;
+  color: #202b37;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+#page-projects .project-table .project-table-main p {
+  margin: 4px 0 0;
+  color: #7b8491;
+  font-size: 11px;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+#page-projects .project-table .project-table-date {
+  color: #687384;
+  font-size: 11px;
+  white-space: nowrap;
+}
+#page-projects .project-table .badge {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  padding: 5px 9px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+#page-projects .project-table .project-table-actions {
+  white-space: nowrap;
+  text-align: right;
+}
+#page-projects .project-table .project-table-actions .text-button {
+  min-height: 30px;
+  margin-left: 4px;
+  padding: 6px 9px;
+  border: 1px solid #e4e8ed;
+  border-radius: 8px;
+  background: #fff;
+  color: #475467;
+  font-size: 11px;
+  font-weight: 650;
+  transition: background-color .15s ease, border-color .15s ease, color .15s ease;
+}
+#page-projects .project-table .project-table-actions .text-button:hover {
+  border-color: #cbd5df;
+  background: #f5f8fa;
+  color: #243746;
+}
+#page-projects .project-table .project-table-actions .text-button:focus-visible {
+  outline: 2px solid #8cae9b;
+  outline-offset: 2px;
+}
+@media (max-width: 700px) {
+  #page-projects .project-table-wrap { border-radius: 11px; }
+  #page-projects .project-table thead th,
+  #page-projects .project-table tbody td { padding: 12px 11px; }
+  #page-projects .project-table .project-table-actions .text-button {
+    margin-left: 2px;
+    padding: 6px 8px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  #page-projects .project-table tbody td,
+  #page-projects .project-table .project-table-actions .text-button { transition: none; }
+}
