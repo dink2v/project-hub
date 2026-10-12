@@ -2871,3 +2871,120 @@ button:focus-visible { outline-color: rgba(69,75,84,.24); }
 @media (prefers-color-scheme: light) {
   body { color: #252a31; }
 }
+
+
+/* FIX TEMA NETRAL: override terakhir agar tidak dikalahkan tema lama */
+:root {
+  --primary: #454b54 !important;
+  --primary-dark: #303640 !important;
+  --primary-soft: #eef0f2 !important;
+  --background: #f7f7f8 !important;
+  --surface: #ffffff !important;
+  --text: #252a31 !important;
+  --text-muted: #6b7280 !important;
+  --border: #e2e4e8 !important;
+  --ph-ink: #252a31 !important;
+  --ph-muted: #6b7280 !important;
+  --ph-line: #e2e4e8 !important;
+  --ph-sage: #454b54 !important;
+  --ph-sage-dark: #303640 !important;
+  --ph-sage-pale: #eef0f2 !important;
+}
+html, body, #app-shell, .app-shell, .main-area, .page-content {
+  background-color: #f7f7f8 !important;
+  color: #252a31 !important;
+}
+#auth-screen, .auth-screen, #workspace-screen {
+  background-color: #f7f7f8 !important;
+}
+.auth-card, .content-card, .stat-card, .project-card, .feature-card,
+.note-card, .revision-card, .activity-card, .settings-card,
+.create-workspace-card, .join-workspace-card {
+  background-color: #ffffff !important;
+  border-color: #e2e4e8 !important;
+  color: #252a31 !important;
+}
+.brand-mark, .auth-logo, .brand-logo, .logo-mark,
+.sidebar-brand .brand-logo, .sidebar-brand .logo-mark {
+  color: #ffffff !important;
+  background: linear-gradient(135deg, #737984, #454b54) !important;
+  border-color: #454b54 !important;
+  box-shadow: 0 7px 18px rgba(37,42,49,.12) !important;
+}
+.primary-button, button.primary-button, .btn-primary,
+#auth-submit, #otp-submit, #create-workspace-button,
+#join-workspace-button, #add-project-button, #home-add-project,
+#invite-user-button {
+  color: #ffffff !important;
+  background: #454b54 !important;
+  border-color: #454b54 !important;
+}
+.primary-button:hover, button.primary-button:hover, .btn-primary:hover,
+#auth-submit:hover, #otp-submit:hover, #create-workspace-button:hover,
+#join-workspace-button:hover, #add-project-button:hover,
+#home-add-project:hover, #invite-user-button:hover {
+  color: #ffffff !important;
+  background: #303640 !important;
+  border-color: #303640 !important;
+}
+.sidebar {
+  color: #252a31 !important;
+  background: #ffffff !important;
+  border-color: #e2e4e8 !important;
+  box-shadow: none !important;
+}
+.sidebar-brand, .sidebar-brand strong, .sidebar-brand span,
+#sidebar-workspace-name, #sidebar-workspace-role {
+  color: #252a31 !important;
+}
+.sidebar nav button, .sidebar-nav button, .sidebar [data-page],
+.nav-item, #mobile-nav button {
+  color: #525965 !important;
+}
+.sidebar nav button:hover, .sidebar-nav button:hover,
+.sidebar [data-page]:hover, .nav-item:hover, #mobile-nav button:hover {
+  color: #303640 !important;
+  background: #f2f3f5 !important;
+}
+.sidebar nav button.active, .sidebar-nav button.active,
+.sidebar [data-page].active, .nav-item.active,
+#sidebar-more-menu .nav-item.active {
+  color: #303640 !important;
+  background: #eef0f2 !important;
+  border-color: #e2e4e8 !important;
+}
+#user-avatar {
+  color: #303640 !important;
+  background: #eef0f2 !important;
+}
+input, textarea, select, .project-toolbar {
+  border-color: #e2e4e8 !important;
+}
+input:focus, textarea:focus, select:focus {
+  border-color: #737984 !important;
+  box-shadow: 0 0 0 3px rgba(69,75,84,.10) !important;
+}
+a, .text-button { color: #454b54; }
+a:hover, .text-button:hover { color: #303640; }
+#page-projects .project-table-wrap {
+  border-color: #e2e4e8 !important;
+  background: #ffffff !important;
+}
+#page-projects .project-table th {
+  color: #6b7280 !important;
+  background: #f2f3f5 !important;
+  border-color: #e2e4e8 !important;
+}
+#page-projects .project-table td {
+  color: #252a31 !important;
+  border-color: #e2e4e8 !important;
+}
+#page-projects .project-table tbody tr:hover td { background: #fafafb !important; }
+#page-home .stat-total .stat-icon,
+#page-home .stat-active .stat-icon,
+#page-home .stat-revision .stat-icon,
+#page-home .stat-completed .stat-icon {
+  color: #454b54 !important;
+  background: #eef0f2 !important;
+}
+.badge, .status-badge { border-color: #e2e4e8; }
