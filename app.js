@@ -1376,6 +1376,136 @@ async function loadProjects() {
   renderDashboard();
 }
 
+
+/* =========================================
+   DETAIL PROYEK
+   Data tetap menggunakan tabel projects yang ada.
+========================================= */
+let activeProject = null;
+let activeProjectTab = "info";
+
+function openProjectDetail(project) {
+  if (!project) {
+    showToast("Data proyek tidak ditemukan.", "error");
+    return;
+  }
+
+  activeProject = project;
+  activeProjectTab = "info";
+  renderProjectDetail();
+  navigateTo("project-detail");
+}
+
+function renderProjectDetail() {
+  if (!activeProject) return;
+
+  const title = $("detail-project-title");
+  const description = $("detail-project-description");
+  const content = $("project-detail-content");
+
+  if (title) title.textContent = activeProject.name || "Tanpa nama";
+  if (description) {
+    description.textContent = activeProject.description || "Belum ada deskripsi proyek.";
+  }
+
+  document.querySelectorAll("[data-tab]").forEach((button) => {
+    const selected = button.dataset.tab === activeProjectTab;
+    button.classList.toggle("active", selected);
+    button.setAttribute("aria-selected", String(selected));
+  });
+
+  if (!content) return;
+
+  if (activeProjectTab === "info") {
+    content.innerHTML = `
+      <div class="project-detail-info">
+        <div class="detail-info-heading">
+          <div>
+            <span class="detail-eyebrow">INFORMASI PROYEK</span>
+            <h3>${escapeHtml(activeProject.name || "Tanpa nama")}</h3>
+          </div>
+          <span class="badge ${getStatusClass(getProjectStatus(activeProject))}">
+            ${escapeHtml(getProjectStatus(activeProject))}
+          </span>
+        </div>
+        <div class="detail-info-grid">
+          <div class="detail-info-item">
+            <span>Deskripsi</span>
+            <p>${escapeHtml(activeProject.description || "Belum ada deskripsi.")}</p>
+          </div>
+          <div class="detail-info-item">
+            <span>Dibuat</span>
+            <p>${escapeHtml(formatProjectDate(activeProject.created_at))}</p>
+          </div>
+          <div class="detail-info-item">
+            <span>Terakhir diperbarui</span>
+            <p>${escapeHtml(formatProjectDate(activeProject.updated_at || activeProject.created_at))}</p>
+          </div>
+        </div>
+        <div class="detail-next-step">
+          <strong>Langkah berikutnya</strong>
+          <p>Mulai dari menyusun daftar fitur. Bagian lain tetap bisa dikelola kapan saja.</p>
+          <button type="button" class="primary-button" id="detail-start-features">Buka daftar fitur</button>
+        </div>
+      </div>
+    `;
+    $("detail-start-features")?.addEventListener("click", () => {
+      setProjectDetailTab("features");
+    });
+    return;
+  }
+
+  const tabMessages = {
+    features: {
+      title: "Daftar fitur proyek",
+      description: "Bagian ini akan digunakan untuk menyusun dan mengelola fitur proyek.",
+      note: "Sebelum menyimpan fitur, struktur tabel fitur Supabase perlu dipastikan agar data terhubung ke proyek yang benar tanpa mengubah skema yang sudah berjalan."
+    },
+    notes: {
+      title: "Catatan proyek",
+      description: "Catatan khusus proyek akan dikelola dari bagian ini.",
+      note: "Tampilan dan penyimpanan catatan akan disambungkan setelah struktur tabel yang tersedia diverifikasi."
+    },
+    revisions: {
+      title: "Riwayat revisi",
+      description: "Catat permintaan revisi dan perkembangan perbaikannya.",
+      note: "Penyimpanan revisi akan disambungkan setelah struktur tabel yang tersedia diverifikasi."
+    },
+    activities: {
+      title: "Aktivitas proyek",
+      description: "Lihat rangkuman aktivitas yang berkaitan dengan proyek ini.",
+      note: "Riwayat aktivitas akan disambungkan ke sumber data yang tersedia tanpa mengubah backend."
+    }
+  };
+
+  const selectedTab = tabMessages[activeProjectTab];
+  if (selectedTab) {
+    content.innerHTML = `
+      <div class="project-detail-placeholder">
+        <span class="detail-eyebrow">${activeProjectTab === "features" ? "MULAI DARI SINI" : "DETAIL PROYEK"}</span>
+        <h3>${escapeHtml(selectedTab.title)}</h3>
+        <p>${escapeHtml(selectedTab.description)}</p>
+        <div class="inline-notice">${escapeHtml(selectedTab.note)}</div>
+      </div>
+    `;
+  }
+}
+
+function setProjectDetailTab(tab) {
+  const validTabs = ["info", "features", "notes", "revisions", "activities"];
+  if (!validTabs.includes(tab)) return;
+  activeProjectTab = tab;
+  renderProjectDetail();
+}
+
+$("edit-project-button")?.addEventListener("click", () => {
+  if (activeProject) openProjectForm(activeProject);
+});
+
+document.querySelectorAll("[data-tab]").forEach((button) => {
+  button.addEventListener("click", () => setProjectDetailTab(button.dataset.tab));
+});
+
 function openProjectForm(project = null) {
   const backdrop = document.getElementById("modal-backdrop");
   const title = document.getElementById("modal-title");
