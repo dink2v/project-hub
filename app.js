@@ -1157,14 +1157,14 @@ function formatProjectDate(value) {
 }
 
 function getProjectStatus(project) {
-  return project.status || "Belum Dikerjakan";
+  return project.status || "Perencanaan";
 }
 
 function getStatusClass(status) {
   const classes = {
-    "Belum Dikerjakan": "status-not-started",
+    "Perencanaan": "status-not-started",
     "Sedang Dikerjakan": "status-in-progress",
-    "Revisi": "status-revision",
+    "Diarsipkan": "status-revision",
     "Selesai": "status-completed"
   };
 
@@ -1961,8 +1961,8 @@ function renderDashboard() {
   const active = projects.filter(
     (project) => getProjectStatus(project) === "Sedang Dikerjakan"
   ).length;
-  const revision = projects.filter(
-    (project) => getProjectStatus(project) === "Revisi"
+  const planning = projects.filter(
+    (project) => getProjectStatus(project) === "Perencanaan"
   ).length;
   const completed = projects.filter(
     (project) => getProjectStatus(project) === "Selesai"
@@ -1975,7 +1975,7 @@ function renderDashboard() {
 
   setText("stat-total-projects", total);
   setText("stat-active-projects", active);
-  setText("stat-revision-projects", revision);
+  setText("stat-planning-projects", planning);
   setText("stat-completed-projects", completed);
 
   const recentContainer = document.getElementById("recent-projects");
