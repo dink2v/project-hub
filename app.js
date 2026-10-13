@@ -1115,14 +1115,6 @@ $("mobile-menu-button")?.addEventListener("click", () => {
   $("mobile-menu-button")?.setAttribute("aria-expanded", String(willOpen));
 });
 
-$("home-add-project")?.addEventListener("click", () => {
-  navigateTo("projects").then(() => {
-    if (typeof openProjectForm === "function") {
-      openProjectForm();
-    }
-  });
-});
-
 $("add-project-button")?.addEventListener("click", () => {
   if (typeof openProjectForm === "function") {
     openProjectForm();
