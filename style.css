@@ -4,18 +4,18 @@
    ========================================= */
 
 :root {
-  --primary: #718b82;
-  --primary-dark: #526b62;
-  --primary-soft: #edf2ef;
-  --background: #f7f9fc;
+  --primary: #4f46e5;
+  --primary-dark: #3730a3;
+  --primary-soft: #eef2ff;
+  --background: #f6f7ff;
   --surface: #ffffff;
-  --text: #1f2937;
+  --text: #20213a;
   --text-muted: #6b7280;
-  --border: #e5e7eb;
+  --border: #e4e7f2;
   --danger: #dc2626;
   --warning: #d97706;
   --radius: 14px;
-  --shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+  --shadow: 0 10px 28px rgba(55, 48, 163, 0.08);
 }
 
 * {
@@ -3783,3 +3783,77 @@ input[type="search"]::-webkit-search-cancel-button {
   .general-note-actions button { flex: 1; }
   .general-note-form { padding: 14px; }
 }
+
+
+/* =========================================
+   VIBRANT COLOR REFRESH — PROJECT HUB
+   ========================================= */
+body {
+  background:
+    radial-gradient(circle at 94% 3%, rgba(167, 139, 250, .12), transparent 25rem),
+    radial-gradient(circle at 5% 22%, rgba(96, 165, 250, .09), transparent 23rem),
+    var(--background);
+}
+.sidebar { background: #fff; border-right-color: #e4e7f2; }
+.sidebar-brand { border-bottom-color: #ecebfb; }
+.brand-mark, .sidebar-brand .brand-mark, .auth-logo, .logo-mark {
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  color: #fff;
+  box-shadow: 0 7px 16px rgba(79, 70, 229, .2);
+}
+.sidebar-nav .nav-item.active,
+#sidebar-more-toggle.active,
+#sidebar-more-menu .nav-item.active {
+  color: #4338ca;
+  background: linear-gradient(100deg, #eef2ff, #f5f3ff);
+}
+.sidebar-nav .nav-item:hover,
+#sidebar-more-menu .nav-item:hover { background: #f5f3ff; color: #4338ca; }
+.topbar { background: rgba(255,255,255,.92); border-bottom-color: #e5e7f2; }
+.topbar-title, .page-intro h2 { color: #27265a; }
+.primary-button, #add-project-button {
+  color: #fff;
+  background: linear-gradient(115deg, #4f46e5, #7c3aed);
+  border-color: transparent;
+  box-shadow: 0 5px 12px rgba(79, 70, 229, .16);
+}
+.primary-button:hover, #add-project-button:hover {
+  color: #fff;
+  background: linear-gradient(115deg, #4338ca, #6d28d9);
+  border-color: transparent;
+}
+.secondary-button { border-color: #dcdcf8; color: #4f46e5; background: #f8f8ff; }
+.secondary-button:hover { border-color: #c4b5fd; color: #4338ca; background: #f1f0ff; }
+input:focus, select:focus, textarea:focus {
+  border-color: #818cf8;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, .14);
+}
+.stat-card {
+  border: 1px solid #e5e7f2;
+  box-shadow: 0 6px 20px rgba(45, 46, 105, .045);
+}
+.stat-total { background: linear-gradient(135deg, #fff, #eef2ff); border-top: 3px solid #6366f1; }
+.stat-active { background: linear-gradient(135deg, #fff, #fff7ed); border-top: 3px solid #f59e0b; }
+.stat-revision { background: linear-gradient(135deg, #fff, #f5f3ff); border-top: 3px solid #a78bfa; }
+.stat-completed { background: linear-gradient(135deg, #fff, #ecfdf5); border-top: 3px solid #10b981; }
+.stat-total .stat-icon { color: #4338ca; background: #e0e7ff; border-color: #c7d2fe; }
+.stat-active .stat-icon { color: #b45309; background: #ffedd5; border-color: #fed7aa; }
+.stat-revision .stat-icon { color: #7e22ce; background: #f3e8ff; border-color: #e9d5ff; }
+.stat-completed .stat-icon { color: #047857; background: #d1fae5; border-color: #a7f3d0; }
+.content-card, .dashboard-card, .project-card {
+  border-color: #e5e7f2;
+  box-shadow: 0 7px 24px rgba(45, 46, 105, .035);
+}
+.project-card:hover { border-color: #a5b4fc; box-shadow: 0 10px 26px rgba(79, 70, 229, .09); }
+.detail-tabs button.active {
+  color: #4338ca;
+  background: #eef2ff;
+  border-color: #c7d2fe;
+}
+.badge.status-completed { color: #047857; background: #d1fae5; }
+.badge.status-pending { color: #92400e; background: #fef3c7; }
+.mobile-nav:not(.hidden) { background: #fff; border-bottom-color: #e4e7f2; }
+.mobile-nav button.active { color: #fff; background: linear-gradient(115deg, #4f46e5, #7c3aed); border-color: transparent; }
+.mobile-nav button { border-color: #e4e7f2; background: #f8f8ff; }
+a { color: #4f46e5; }
+a:hover { color: #3730a3; }

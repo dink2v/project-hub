@@ -827,9 +827,7 @@ function renderGeneralNotesList(workspaceId) {
     list.innerHTML =
       '<div class="empty-state general-notes-empty"><div class="empty-icon" aria-hidden="true">▧</div>' +
       '<strong>Belum ada catatan umum</strong><p>Tambahkan catatan pertama untuk menyimpan informasi penting workspace.</p>' +
-      (generalNotesCanManage ? '<button type="button" class="primary-button" id="empty-add-general-note">+ Tambah Catatan</button>' : '') +
       '</div>';
-    $("empty-add-general-note")?.addEventListener("click", () => renderGeneralNoteForm(null));
     return;
   }
 
@@ -979,7 +977,7 @@ async function navigateTo(page) {
 
   target.classList.remove("hidden");
 
-  const secondaryPages = ["features", "revisions", "activities", "users", "settings"];
+  const secondaryPages = ["users", "settings"];
   const isSecondaryPage = secondaryPages.includes(page);
 
   document.querySelectorAll("[data-page]").forEach((button) => {
@@ -1007,10 +1005,7 @@ async function navigateTo(page) {
   const titles = {
     home: "Beranda",
     projects: "Data Proyek",
-    features: "Daftar Fitur",
     "general-notes": "Catatan Umum",
-    revisions: "Riwayat Revisi",
-    activities: "Aktivitas",
     users: "Anggota",
     settings: "Pengaturan",
     "project-detail": "Detail Proyek"
@@ -1041,21 +1036,10 @@ async function navigateTo(page) {
     await loadWorkspaceMembers();
   }
 
-  if (page === "features" && typeof loadAllFeatures === "function") {
-    await loadAllFeatures();
-  }
-
   if (page === "general-notes" && typeof loadGeneralNotes === "function") {
     await loadGeneralNotes();
   }
 
-  if (page === "revisions" && typeof loadRevisions === "function") {
-    await loadRevisions();
-  }
-
-  if (page === "activities" && typeof loadActivities === "function") {
-    await loadActivities();
-  }
 }
 
 /* =========================================
@@ -1506,11 +1490,6 @@ function renderProjectDetail() {
       description: "Catat permintaan revisi dan perkembangan perbaikannya.",
       note: "Tab Revisi akan disambungkan pada tahap berikutnya."
     },
-    activities: {
-      title: "Aktivitas proyek",
-      description: "Lihat rangkuman aktivitas yang berkaitan dengan proyek ini.",
-      note: "Tab Aktivitas akan disambungkan pada tahap berikutnya."
-    }
   };
 
   const selectedTab = tabMessages[activeProjectTab];
@@ -2010,7 +1989,7 @@ async function deleteFeature(featureId) {
 }
 
 function setProjectDetailTab(tab) {
-  const validTabs = ["info", "features", "notes", "revisions", "activities"];
+  const validTabs = ["info", "features", "notes", "revisions"];
   if (!validTabs.includes(tab)) return;
   activeProjectTab = tab;
   renderProjectDetail();
