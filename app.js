@@ -421,9 +421,8 @@ async function initializeAuth() {
   } catch (error) {
     console.error("Sesi pulih, tetapi data workspace gagal dimuat:", error);
 
-    // Pertahankan sesi aktif dan buka dashboard pribadi sebagai fallback,
-    // bukan mengembalikan pengguna ke halaman login.
-    renderPersonalWorkspaceDashboard([]);
+    // Pertahankan sesi aktif dan tampilkan pemilih workspace sebagai fallback.
+    showScreen("workspace-screen");
     showToast(
       "Sesi login masih aktif, tetapi data workspace gagal dimuat. Periksa koneksi lalu coba lagi.",
       "error"
@@ -446,155 +445,6 @@ supabase.auth.onAuthStateChange((event, session) => {
 });
 
 initializeAuth();
-
-function ensureDashboardWorkspacePanel() {
-  const homePage = $("page-home");
-  if (!homePage) return null;
-
-  let panel = $("dashboard-workspace-panel");
-  if (!panel) {
-    panel = document.createElement("section");
-    panel.id = "dashboard-workspace-panel";
-    panel.className = "content-card";
-    panel.innerHTML = `
-      <details class="dashboard-workspace-details">
-        <summary class="dashboard-workspace-summary">
-          <span>
-            <strong>Workspace Saya</strong>
-            <small>Kelola workspace, anggota, atau undangan</small>
-          </span>
-          <span class="dashboard-workspace-toggle">Kelola <span aria-hidden="true">⌄</span></span>
-        </summary>
-        <div class="dashboard-workspace-body">
-          <div id="dashboard-workspace-list" class="workspace-list"></div>
-          <div id="dashboard-workspace-actions" class="dashboard-workspace-actions"></div>
-          <div id="dashboard-workspace-create-slot"></div>
-          <div id="dashboard-workspace-join-slot"></div>
-        </div>
-      </details>
-    `;
-
-    const stats = homePage.querySelector(".stats-grid");
-    homePage.insertBefore(panel, stats || homePage.firstChild);
-  }
-
-  // Gunakan form workspace yang sudah ada agar tidak menduplikasi ID atau logika.
-  const createCard = document.querySelector(".create-workspace-card");
-  const joinCard = document.querySelector(".join-workspace-card");
-  const createSlot = $("dashboard-workspace-create-slot");
-  const joinSlot = $("dashboard-workspace-join-slot");
-
-  if (createCard && createSlot && createCard.parentElement !== createSlot) {
-    createSlot.appendChild(createCard);
-  }
-  if (joinCard && joinSlot && joinCard.parentElement !== joinSlot) {
-    joinSlot.appendChild(joinCard);
-  }
-
-  return panel;
-}
-
-function renderPersonalWorkspaceDashboard(workspaces = []) {
-  currentWorkspace = null;
-  projects = [];
-
-  const panel = ensureDashboardWorkspacePanel();
-  if (!panel) {
-    showScreen("workspace-screen");
-    return;
-  }
-
-  const list = $("dashboard-workspace-list");
-  const actions = $("dashboard-workspace-actions");
-
-  if (list) {
-    list.replaceChildren();
-
-    if (workspaces.length) {
-      workspaces.forEach((workspace) => {
-        const button = document.createElement("button");
-        button.type = "button";
-        button.className = "workspace-option";
-
-        const mark = document.createElement("div");
-        mark.className = "brand-mark";
-        mark.style.width = "40px";
-        mark.style.height = "40px";
-        mark.textContent = "W";
-
-        const info = document.createElement("div");
-        info.className = "workspace-info";
-
-        const name = document.createElement("strong");
-        name.textContent = workspace.name;
-
-        const role = document.createElement("span");
-        role.className = "muted small";
-        role.textContent = workspace.role || "Anggota";
-
-        info.append(name, role);
-
-        const arrow = document.createElement("span");
-        arrow.textContent = "Buka →";
-
-        button.append(mark, info, arrow);
-        button.addEventListener("click", () => openWorkspace(workspace));
-        list.appendChild(button);
-      });
-    } else {
-      const empty = document.createElement("div");
-      empty.className = "empty-state";
-      empty.innerHTML = "<strong>Belum ada workspace</strong><p>Kamu tetap bisa menggunakan dashboard pribadi. Buat workspace jika ingin mengelola proyek bersama anggota lain.</p>";
-      list.appendChild(empty);
-    }
-  }
-
-  if (actions) {
-    actions.replaceChildren();
-
-    const inviteButton = document.createElement("button");
-    inviteButton.type = "button";
-    inviteButton.className = "secondary-button";
-    inviteButton.textContent = "Kelola Anggota / Undang";
-    inviteButton.addEventListener("click", () => {
-      if (!currentWorkspace) {
-        showToast("Buat atau buka workspace terlebih dahulu untuk mengundang anggota.", "info");
-        return;
-      }
-      navigateTo("users");
-    });
-
-    const switchButton = document.createElement("button");
-    switchButton.type = "button";
-    switchButton.className = "secondary-button";
-    switchButton.textContent = "Pilih Workspace";
-    switchButton.addEventListener("click", async () => {
-      showScreen("workspace-screen");
-      await loadWorkspaces(false);
-    });
-
-    actions.append(inviteButton, switchButton);
-  }
-
-  // Dashboard pribadi tetap dapat dibuka tanpa workspace.
-  if ($("sidebar-workspace-name")) $("sidebar-workspace-name").textContent = "Dashboard Pribadi";
-  if ($("sidebar-workspace-role")) $("sidebar-workspace-role").textContent = "Pribadi";
-  if ($("user-name")) {
-    $("user-name").textContent =
-      currentUser?.user_metadata?.full_name ||
-      currentUser?.email?.split("@")[0] ||
-      "Pengguna";
-  }
-  if ($("user-email")) $("user-email").textContent = currentUser?.email || "";
-  if ($("settings-account-email")) $("settings-account-email").textContent = currentUser?.email || "";
-  if ($("user-avatar")) {
-    const displayName = currentUser?.user_metadata?.full_name || currentUser?.email || "U";
-    $("user-avatar").textContent = displayName.charAt(0).toUpperCase();
-  }
-
-  showScreen("app-shell");
-  navigateTo("home");
-}
 
 async function loadWorkspaces(autoOpenSavedWorkspace = true) {
   const list = $("workspace-list");
@@ -625,7 +475,7 @@ async function loadWorkspaces(autoOpenSavedWorkspace = true) {
       `;
 
       if (autoOpenSavedWorkspace) {
-        renderPersonalWorkspaceDashboard([]);
+        showScreen("workspace-screen");
       }
       return;
     }
@@ -674,7 +524,7 @@ async function loadWorkspaces(autoOpenSavedWorkspace = true) {
     }
 
     if (autoOpenSavedWorkspace) {
-      renderPersonalWorkspaceDashboard(workspaces);
+      showScreen("workspace-screen");
       return;
     }
 
@@ -831,50 +681,6 @@ async function openWorkspace(workspace) {
     $("user-avatar").textContent = name.charAt(0).toUpperCase();
   }
 
-  const panel = ensureDashboardWorkspacePanel();
-  if (panel) panel.classList.remove("hidden");
-
-  const dashboardList = $("dashboard-workspace-list");
-  if (dashboardList) {
-    dashboardList.replaceChildren();
-    const currentItem = document.createElement("div");
-    currentItem.className = "workspace-option";
-    const mark = document.createElement("div");
-    mark.className = "brand-mark";
-    mark.style.width = "40px";
-    mark.style.height = "40px";
-    mark.textContent = "W";
-    const info = document.createElement("div");
-    info.className = "workspace-info";
-    const name = document.createElement("strong");
-    name.textContent = workspace.name || "Workspace";
-    const role = document.createElement("span");
-    role.className = "muted small";
-    role.textContent = workspace.role || "Anggota";
-    info.append(name, role);
-    currentItem.append(mark, info);
-    dashboardList.appendChild(currentItem);
-  }
-
-  const dashboardActions = $("dashboard-workspace-actions");
-  if (dashboardActions && !dashboardActions.dataset.ready) {
-    dashboardActions.dataset.ready = "true";
-    const inviteButton = document.createElement("button");
-    inviteButton.type = "button";
-    inviteButton.className = "secondary-button";
-    inviteButton.textContent = "Kelola Anggota / Undang";
-    inviteButton.addEventListener("click", () => navigateTo("users"));
-
-    const switchButton = document.createElement("button");
-    switchButton.type = "button";
-    switchButton.className = "secondary-button";
-    switchButton.textContent = "Pilih Workspace";
-    switchButton.addEventListener("click", async () => {
-      showScreen("workspace-screen");
-      await loadWorkspaces(false);
-    });
-    dashboardActions.append(inviteButton, switchButton);
-  }
 
   showScreen("app-shell");
   await navigateTo("home");
@@ -1502,21 +1308,21 @@ function renderProjectDetail() {
     return;
   }
 
+  if (activeProjectTab === "notes") {
+    renderProjectNotes(content, activeProject);
+    return;
+  }
+
   const tabMessages = {
-    notes: {
-      title: "Catatan proyek",
-      description: "Catatan khusus proyek akan dikelola dari bagian ini.",
-      note: "Tab Catatan akan disambungkan setelah Daftar Fitur selesai."
-    },
     revisions: {
       title: "Riwayat revisi",
       description: "Catat permintaan revisi dan perkembangan perbaikannya.",
-      note: "Tab Revisi akan disambungkan setelah Daftar Fitur selesai."
+      note: "Tab Revisi akan disambungkan pada tahap berikutnya."
     },
     activities: {
       title: "Aktivitas proyek",
       description: "Lihat rangkuman aktivitas yang berkaitan dengan proyek ini.",
-      note: "Tab Aktivitas akan disambungkan setelah Daftar Fitur selesai."
+      note: "Tab Aktivitas akan disambungkan pada tahap berikutnya."
     }
   };
 
@@ -1531,6 +1337,236 @@ function renderProjectDetail() {
       </div>
     `;
   }
+}
+
+
+let projectNotesRows = [];
+let projectNotesLoadToken = 0;
+let projectNotesCanManage = false;
+let editingProjectNoteId = null;
+
+function renderProjectNotes(content, project) {
+  const token = ++projectNotesLoadToken;
+  projectNotesRows = [];
+  projectNotesCanManage = false;
+  editingProjectNoteId = null;
+
+  content.innerHTML =
+    '<div class="project-notes-panel">' +
+      '<div class="project-notes-heading">' +
+        '<div><span class="detail-eyebrow">DOKUMENTASI PROYEK</span>' +
+        '<h3>Catatan Proyek</h3>' +
+        '<p>Simpan informasi penting yang berkaitan dengan proyek ini.</p></div>' +
+        '<button type="button" class="primary-button" id="add-project-note-button" hidden>+ Tambah Catatan</button>' +
+      '</div>' +
+      '<div id="project-note-form-container"></div>' +
+      '<div id="project-notes-list" class="project-notes-list"><div class="loading-state">Memuat catatan proyek...</div></div>' +
+    '</div>';
+
+  $("add-project-note-button")?.addEventListener("click", () => renderProjectNoteForm(null));
+  loadProjectNotes(project.id, token);
+}
+
+async function loadProjectNotes(projectId, token = projectNotesLoadToken) {
+  const container = $("project-notes-list");
+  if (!container) return;
+
+  const [roleResult, notesResult] = await Promise.all([
+    supabase.rpc("project_access_role", { p_project_id: projectId }),
+    supabase
+      .from("project_notes")
+      .select("id, project_id, feature_id, title, content, created_by, created_at, updated_at")
+      .eq("project_id", projectId)
+      .order("updated_at", { ascending: false })
+  ]);
+
+  if (token !== projectNotesLoadToken || !$("project-notes-list")) return;
+
+  projectNotesCanManage = !roleResult.error &&
+    ["Owner", "Editor"].includes(roleResult.data);
+  const addButton = $("add-project-note-button");
+  if (addButton) addButton.hidden = !projectNotesCanManage;
+
+  if (notesResult.error) {
+    container.innerHTML =
+      '<div class="empty-state"><strong>Catatan gagal dimuat</strong><p id="project-notes-load-error"></p>' +
+      '<button type="button" class="secondary-button" id="retry-project-notes">Coba Lagi</button></div>';
+    $("project-notes-load-error").textContent = getErrorMessage(notesResult.error);
+    $("retry-project-notes")?.addEventListener("click", () => loadProjectNotes(projectId, token));
+    return;
+  }
+
+  projectNotesRows = notesResult.data || [];
+  renderProjectNoteList(projectId);
+}
+
+function renderProjectNoteList(projectId) {
+  const container = $("project-notes-list");
+  if (!container) return;
+
+  if (!projectNotesRows.length) {
+    container.innerHTML =
+      '<div class="empty-state project-notes-empty"><div class="empty-icon" aria-hidden="true">▧</div>' +
+      '<strong>Belum ada catatan proyek</strong><p>Tambahkan catatan pertama untuk menyimpan informasi penting proyek.</p>' +
+      (projectNotesCanManage ? '<button type="button" class="primary-button" id="empty-add-project-note">+ Tambah Catatan</button>' : '') +
+      '</div>';
+    $("empty-add-project-note")?.addEventListener("click", () => renderProjectNoteForm(null));
+    return;
+  }
+
+  const currentName = currentUser?.user_metadata?.full_name ||
+    currentUser?.email || "Akun kamu";
+
+  container.innerHTML = projectNotesRows.map((note) => {
+    const isAuthor = String(note.created_by) === String(currentUser?.id);
+    const author = isAuthor ? currentName : "Anggota " + String(note.created_by || "").slice(0, 8);
+    const canEdit = projectNotesCanManage && isAuthor;
+    const canDelete = projectNotesCanManage;
+    return '<article class="project-note-card">' +
+      '<div class="project-note-copy"><h4>' + escapeHtml(note.title || "Tanpa judul") + '</h4>' +
+      '<p class="project-note-content">' + escapeHtml(note.content || "").replace(/\n/g, "<br>") + '</p>' +
+      '<div class="project-note-meta"><span>' + escapeHtml(author) + '</span><span>' +
+      escapeHtml(formatProjectNoteTimestamp(note.updated_at || note.created_at)) + '</span></div></div>' +
+      ((canEdit || canDelete) ? '<div class="project-note-actions">' +
+        (canEdit ? '<button type="button" class="secondary-button" data-note-action="edit" data-note-id="' + escapeHtml(note.id) + '">Edit</button>' : '') +
+        (canDelete ? '<button type="button" class="secondary-button note-delete-button" data-note-action="delete" data-note-id="' + escapeHtml(note.id) + '">Hapus</button>' : '') +
+      '</div>' : '') +
+      '</article>';
+  }).join("");
+
+  container.querySelectorAll("[data-note-action]").forEach((button) => {
+    button.addEventListener("click", async () => {
+      const note = projectNotesRows.find((item) => String(item.id) === String(button.dataset.noteId));
+      if (!note) return;
+      if (button.dataset.noteAction === "edit") {
+        renderProjectNoteForm(note);
+      } else if (button.dataset.noteAction === "delete") {
+        await deleteProjectNote(note, projectId);
+      }
+    });
+  });
+}
+
+function formatProjectNoteTimestamp(value) {
+  const date = value ? new Date(value) : null;
+  if (!date || Number.isNaN(date.getTime())) return "Waktu tidak tersedia";
+  return date.toLocaleString("id-ID", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit"
+  });
+}
+
+function renderProjectNoteForm(note = null) {
+  const container = $("project-note-form-container");
+  if (!container || !activeProject || !projectNotesCanManage) return;
+
+  editingProjectNoteId = note?.id || null;
+  container.innerHTML =
+    '<form id="project-note-form" class="project-note-form">' +
+      '<div class="project-note-form-heading"><strong>' + (note ? "Edit Catatan" : "Catatan Baru") + '</strong>' +
+      '<button type="button" class="text-button" id="cancel-project-note">Batal</button></div>' +
+      '<div class="form-group"><label for="project-note-title">Judul catatan</label>' +
+      '<input id="project-note-title" name="title" type="text" maxlength="150" required placeholder="Contoh: Keputusan rapat" value="' + escapeHtml(note?.title || "") + '"></div>' +
+      '<div class="form-group"><label for="project-note-content">Isi catatan</label>' +
+      '<textarea id="project-note-content" name="content" rows="5" maxlength="10000" placeholder="Tulis detail catatan..." required>' + escapeHtml(note?.content || "") + '</textarea></div>' +
+      '<p id="project-note-form-error" class="form-error" hidden></p>' +
+      '<div class="project-note-form-actions"><button type="submit" class="primary-button" id="save-project-note">' + (note ? "Simpan Perubahan" : "Simpan Catatan") + '</button></div>' +
+    '</form>';
+
+  $("cancel-project-note")?.addEventListener("click", () => {
+    editingProjectNoteId = null;
+    container.replaceChildren();
+  });
+  $("project-note-form")?.addEventListener("submit", saveProjectNote);
+  requestAnimationFrame(() => $("project-note-title")?.focus());
+}
+
+async function saveProjectNote(event) {
+  event.preventDefault();
+  const form = $("project-note-form");
+  const button = $("save-project-note");
+  const errorElement = $("project-note-form-error");
+  const title = $("project-note-title")?.value.trim();
+  const noteContent = $("project-note-content")?.value.trim();
+
+  if (!form || !currentUser || !activeProject || !currentWorkspace) {
+    showToast("Buka proyek terlebih dahulu sebelum menyimpan catatan.", "error");
+    return;
+  }
+  if (!title || !noteContent) {
+    if (errorElement) {
+      errorElement.textContent = "Judul dan isi catatan wajib diisi.";
+      errorElement.hidden = false;
+    }
+    return;
+  }
+
+  if (button) {
+    button.disabled = true;
+    button.textContent = "Menyimpan...";
+  }
+  if (errorElement) {
+    errorElement.hidden = true;
+    errorElement.textContent = "";
+  }
+
+  let result;
+  if (editingProjectNoteId) {
+    result = await supabase
+      .from("project_notes")
+      .update({ title, content: noteContent, updated_at: new Date().toISOString() })
+      .eq("id", editingProjectNoteId)
+      .eq("project_id", activeProject.id);
+  } else {
+    result = await supabase
+      .from("project_notes")
+      .insert({
+        project_id: activeProject.id,
+        feature_id: null,
+        title,
+        content: noteContent,
+        created_by: currentUser.id
+      });
+  }
+
+  if (result.error) {
+    if (errorElement) {
+      errorElement.textContent = getErrorMessage(result.error);
+      errorElement.hidden = false;
+    }
+    if (button) {
+      button.disabled = false;
+      button.textContent = editingProjectNoteId ? "Simpan Perubahan" : "Simpan Catatan";
+    }
+    return;
+  }
+
+  editingProjectNoteId = null;
+  $("project-note-form-container")?.replaceChildren();
+  showToast("Catatan berhasil disimpan.", "success");
+  await loadProjectNotes(activeProject.id);
+}
+
+async function deleteProjectNote(note, projectId) {
+  if (!projectNotesCanManage) return;
+  if (!window.confirm('Hapus catatan "' + (note.title || "Tanpa judul") + '"? Tindakan ini tidak dapat dibatalkan.')) return;
+
+  const { error } = await supabase
+    .from("project_notes")
+    .delete()
+    .eq("id", note.id)
+    .eq("project_id", projectId);
+
+  if (error) {
+    showToast("Catatan gagal dihapus: " + getErrorMessage(error), "error");
+    return;
+  }
+
+  showToast("Catatan berhasil dihapus.", "success");
+  await loadProjectNotes(projectId);
 }
 
 let featureRows = [];
