@@ -759,6 +759,201 @@ function handleInviteButtonClick() {
   showToast("Halaman Anggota sudah aktif. Sistem undangan perlu disambungkan ke fungsi undangan aman di Supabase sebelum undangan dikirim.", "info");
 }
 
+
+/* =========================================
+   CATATAN UMUM WORKSPACE
+========================================= */
+let generalNotesRows = [];
+let generalNotesCanManage = false;
+let editingGeneralNoteId = null;
+let generalNotesLoadToken = 0;
+
+async function loadGeneralNotes() {
+  const content = $("general-notes-content");
+  if (!content) return;
+  if (!currentWorkspace) {
+    content.innerHTML = '<div class="empty-state"><strong>Workspace belum dibuka</strong><p>Buka workspace terlebih dahulu untuk melihat catatan umum.</p></div>';
+    return;
+  }
+
+  const workspaceId = currentWorkspace.id;
+  const token = ++generalNotesLoadToken;
+  content.innerHTML =
+    '<div class="general-notes-panel">' +
+      '<div class="general-notes-heading">' +
+        '<div><span class="detail-eyebrow">DOKUMENTASI WORKSPACE</span><h3>Catatan Umum</h3>' +
+        '<p>Catatan bersama untuk informasi penting di workspace ini.</p></div>' +
+        '<button type="button" class="primary-button" id="add-general-note-button" hidden>+ Tambah Catatan</button>' +
+      '</div>' +
+      '<div id="general-note-form-container"></div>' +
+      '<div id="general-notes-list" class="general-notes-list"><div class="loading-state">Memuat catatan...</div></div>' +
+    '</div>';
+
+  const [roleResult, notesResult] = await Promise.all([
+    supabase.rpc("workspace_role", { p_workspace_id: workspaceId }),
+    supabase.from("workspace_notes")
+      .select("id, workspace_id, title, content, created_by, created_at, updated_at")
+      .eq("workspace_id", workspaceId)
+      .order("updated_at", { ascending: false })
+  ]);
+
+  if (token !== generalNotesLoadToken || currentWorkspace?.id !== workspaceId || !$("general-notes-content")) return;
+
+  generalNotesCanManage = !roleResult.error && ["Owner", "Editor"].includes(roleResult.data);
+  const addButton = $("add-general-note-button");
+  if (addButton) addButton.hidden = !generalNotesCanManage;
+  addButton?.addEventListener("click", () => renderGeneralNoteForm(null));
+
+  const list = $("general-notes-list");
+  if (!list) return;
+  if (notesResult.error) {
+    list.innerHTML =
+      '<div class="empty-state"><strong>Catatan gagal dimuat</strong><p id="general-notes-load-error"></p>' +
+      '<button type="button" class="secondary-button" id="retry-general-notes">Coba Lagi</button></div>';
+    $("general-notes-load-error").textContent = getErrorMessage(notesResult.error);
+    $("retry-general-notes")?.addEventListener("click", loadGeneralNotes);
+    return;
+  }
+
+  generalNotesRows = notesResult.data || [];
+  renderGeneralNotesList(workspaceId);
+}
+
+function renderGeneralNotesList(workspaceId) {
+  const list = $("general-notes-list");
+  if (!list) return;
+
+  if (!generalNotesRows.length) {
+    list.innerHTML =
+      '<div class="empty-state general-notes-empty"><div class="empty-icon" aria-hidden="true">▧</div>' +
+      '<strong>Belum ada catatan umum</strong><p>Tambahkan catatan pertama untuk menyimpan informasi penting workspace.</p>' +
+      (generalNotesCanManage ? '<button type="button" class="primary-button" id="empty-add-general-note">+ Tambah Catatan</button>' : '') +
+      '</div>';
+    $("empty-add-general-note")?.addEventListener("click", () => renderGeneralNoteForm(null));
+    return;
+  }
+
+  const currentName = currentUser?.user_metadata?.full_name || currentUser?.email || "Akun kamu";
+  list.innerHTML = generalNotesRows.map((note) => {
+    const isAuthor = String(note.created_by) === String(currentUser?.id);
+    const author = isAuthor ? currentName : "Anggota " + String(note.created_by || "").slice(0, 8);
+    const canEdit = generalNotesCanManage && isAuthor;
+    return '<article class="general-note-card"><div class="general-note-copy">' +
+      '<h4>' + escapeHtml(note.title || "Tanpa judul") + '</h4>' +
+      '<p class="general-note-content">' + escapeHtml(note.content || "").replace(/\n/g, "<br>") + '</p>' +
+      '<div class="general-note-meta"><span>' + escapeHtml(author) + '</span><span>' +
+      escapeHtml(formatProjectNoteTimestamp(note.updated_at || note.created_at)) + '</span></div></div>' +
+      ((canEdit || generalNotesCanManage) ? '<div class="general-note-actions">' +
+        (canEdit ? '<button type="button" class="secondary-button" data-general-note-action="edit" data-note-id="' + escapeHtml(note.id) + '">Edit</button>' : '') +
+        (generalNotesCanManage ? '<button type="button" class="secondary-button note-delete-button" data-general-note-action="delete" data-note-id="' + escapeHtml(note.id) + '">Hapus</button>' : '') +
+      '</div>' : '') + '</article>';
+  }).join("");
+
+  list.querySelectorAll("[data-general-note-action]").forEach((button) => {
+    button.addEventListener("click", async () => {
+      const note = generalNotesRows.find((item) => String(item.id) === String(button.dataset.noteId));
+      if (!note) return;
+      if (button.dataset.generalNoteAction === "edit") renderGeneralNoteForm(note);
+      if (button.dataset.generalNoteAction === "delete") await deleteGeneralNote(note, workspaceId);
+    });
+  });
+}
+
+function renderGeneralNoteForm(note = null) {
+  const container = $("general-note-form-container");
+  if (!container || !currentWorkspace || !generalNotesCanManage) return;
+  editingGeneralNoteId = note?.id || null;
+  container.innerHTML =
+    '<form id="general-note-form" class="general-note-form">' +
+      '<div class="general-note-form-heading"><strong>' + (note ? "Edit Catatan Umum" : "Catatan Umum Baru") + '</strong>' +
+      '<button type="button" class="text-button" id="cancel-general-note">Batal</button></div>' +
+      '<div class="form-group"><label for="general-note-title">Judul catatan</label>' +
+      '<input id="general-note-title" name="title" type="text" maxlength="150" required placeholder="Contoh: Informasi workspace" value="' + escapeHtml(note?.title || "") + '"></div>' +
+      '<div class="form-group"><label for="general-note-content">Isi catatan</label>' +
+      '<textarea id="general-note-content" name="content" rows="5" maxlength="10000" required placeholder="Tulis informasi penting...">' + escapeHtml(note?.content || "") + '</textarea></div>' +
+      '<p id="general-note-form-error" class="form-error" hidden></p>' +
+      '<div class="general-note-form-actions"><button type="submit" class="primary-button" id="save-general-note">' + (note ? "Simpan Perubahan" : "Simpan Catatan") + '</button></div>' +
+    '</form>';
+
+  $("cancel-general-note")?.addEventListener("click", () => {
+    editingGeneralNoteId = null;
+    container.replaceChildren();
+  });
+  $("general-note-form")?.addEventListener("submit", saveGeneralNote);
+  requestAnimationFrame(() => $("general-note-title")?.focus());
+}
+
+async function saveGeneralNote(event) {
+  event.preventDefault();
+  const button = $("save-general-note");
+  const errorElement = $("general-note-form-error");
+  const title = $("general-note-title")?.value.trim();
+  const noteContent = $("general-note-content")?.value.trim();
+  if (!currentUser || !currentWorkspace || !generalNotesCanManage) {
+    showToast("Kamu tidak memiliki izin untuk mengelola catatan umum.", "error");
+    return;
+  }
+  if (!title || !noteContent) {
+    if (errorElement) {
+      errorElement.textContent = "Judul dan isi catatan wajib diisi.";
+      errorElement.hidden = false;
+    }
+    return;
+  }
+
+  if (button) {
+    button.disabled = true;
+    button.textContent = "Menyimpan...";
+  }
+  let result;
+  if (editingGeneralNoteId) {
+    result = await supabase.from("workspace_notes")
+      .update({ title, content: noteContent, updated_at: new Date().toISOString() })
+      .eq("id", editingGeneralNoteId)
+      .eq("workspace_id", currentWorkspace.id);
+  } else {
+    result = await supabase.from("workspace_notes").insert({
+      workspace_id: currentWorkspace.id,
+      title,
+      content: noteContent,
+      created_by: currentUser.id
+    });
+  }
+
+  if (result.error) {
+    if (errorElement) {
+      errorElement.textContent = getErrorMessage(result.error);
+      errorElement.hidden = false;
+    }
+    if (button) {
+      button.disabled = false;
+      button.textContent = editingGeneralNoteId ? "Simpan Perubahan" : "Simpan Catatan";
+    }
+    return;
+  }
+
+  editingGeneralNoteId = null;
+  $("general-note-form-container")?.replaceChildren();
+  showToast("Catatan umum berhasil disimpan.", "success");
+  await loadGeneralNotes();
+}
+
+async function deleteGeneralNote(note, workspaceId) {
+  if (!generalNotesCanManage) return;
+  if (!window.confirm('Hapus catatan "' + (note.title || "Tanpa judul") + '"? Tindakan ini tidak dapat dibatalkan.')) return;
+  const { error } = await supabase.from("workspace_notes")
+    .delete()
+    .eq("id", note.id)
+    .eq("workspace_id", workspaceId);
+  if (error) {
+    showToast("Catatan umum gagal dihapus: " + getErrorMessage(error), "error");
+    return;
+  }
+  showToast("Catatan umum berhasil dihapus.", "success");
+  await loadGeneralNotes();
+}
+
+
 /* =========================================
    NAVIGASI HALAMAN
 ========================================= */
