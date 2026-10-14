@@ -1005,6 +1005,7 @@ async function navigateTo(page) {
   const titles = {
     home: "Beranda",
     projects: "Data Proyek",
+    calendar: "Kalender",
     "general-notes": "Catatan Umum",
     users: "Anggota",
     settings: "Pengaturan",
@@ -1015,7 +1016,7 @@ async function navigateTo(page) {
     $("topbar-title").textContent = titles[page] || "Project Hub";
   }
 
-  if (page === "home" || page === "projects") {
+  if (page === "home" || page === "projects" || page === "calendar") {
     if (currentWorkspace && typeof loadProjects === "function") {
       await loadProjects();
     } else if (!currentWorkspace) {
@@ -1026,6 +1027,10 @@ async function navigateTo(page) {
         projectList.innerHTML = "<div class=\"empty-state\"><strong>Dashboard pribadi</strong><p>Buat atau buka workspace untuk mulai mengelola proyek.</p></div>";
       }
     }
+  }
+
+  if (page === "calendar" && currentWorkspace) {
+    await loadCalendarEvents();
   }
 
   if (page === "home" && typeof renderDashboard === "function") {
@@ -2268,6 +2273,481 @@ function renderDashboard() {
        : "<p>Belum ada proyek. Buat proyek pertamamu untuk memulai.</p>";
   }
 }
+
+
+/* =========================================
+   KALENDER WORKSPACE
+   Data tersimpan di public.calendar_events.
+   Akses tetap dibatasi oleh RLS Supabase.
+========================================= */
+let calendarCursor = new Date();
+calendarCursor = new Date(calendarCursor.getFullYear(), calendarCursor.getMonth(), 1);
+let calendarSelectedDate = localDateKey(new Date());
+let calendarEvents = [];
+let editingCalendarEventId = null;
+let calendarLoadToken = 0;
+
+function localDateKey(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function parseCalendarDate(value) {
+  if (!value) return null;
+  const parts = String(value).slice(0, 10).split("-").map(Number);
+  if (parts.length !== 3 || parts.some((part) => !Number.isFinite(part))) return null;
+  return new Date(parts[0], parts[1] - 1, parts[2]);
+}
+
+function formatCalendarDate(date, options = {}) {
+  return new Intl.DateTimeFormat("id-ID", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    ...options
+  }).format(date);
+}
+
+function calendarEventDateKey(event) {
+  return localDateKey(new Date(event.starts_at));
+}
+
+function calendarTypeLabel(type) {
+  return ({
+    project: "Proyek",
+    agenda: "Agenda",
+    meeting: "Rapat",
+    reminder: "Pengingat"
+  })[type] || "Agenda";
+}
+
+function calendarTimeLabel(event) {
+  if (event.all_day) return "Seharian";
+  const start = new Date(event.starts_at);
+  const end = event.ends_at ? new Date(event.ends_at) : null;
+  const formatTime = (date) => new Intl.DateTimeFormat("id-ID", {
+    hour: "2-digit", minute: "2-digit", hourCycle: "h23"
+  }).format(date);
+  return end ? `${formatTime(start)}–${formatTime(end)}` : formatTime(start);
+}
+
+function calendarEventProjectName(event) {
+  if (!event.project_id) return "";
+  return projects.find((project) => String(project.id) === String(event.project_id))?.name || "";
+}
+
+function renderCalendar() {
+  const grid = $("calendar-grid");
+  const monthLabel = $("calendar-month-label");
+  const selectedLabel = $("calendar-selected-date");
+  if (!grid || !monthLabel || !selectedLabel) return;
+
+  const year = calendarCursor.getFullYear();
+  const month = calendarCursor.getMonth();
+  monthLabel.textContent = new Intl.DateTimeFormat("id-ID", {
+    month: "long", year: "numeric"
+  }).format(calendarCursor);
+
+  const selectedDate = parseCalendarDate(calendarSelectedDate) || new Date();
+  selectedLabel.textContent = formatCalendarDate(selectedDate, {
+    weekday: "long", day: "numeric", month: "long"
+  });
+
+  const typeFilter = $("calendar-type-filter")?.value || "all";
+  const firstDay = new Date(year, month, 1);
+  const gridStart = new Date(year, month, 1 - firstDay.getDay());
+  const todayKey = localDateKey(new Date());
+  const cells = [];
+
+  for (let index = 0; index < 42; index += 1) {
+    const date = new Date(gridStart.getFullYear(), gridStart.getMonth(), gridStart.getDate() + index);
+    const key = localDateKey(date);
+    const inMonth = date.getMonth() === month;
+    const dayEvents = calendarEvents
+      .filter((event) => calendarEventDateKey(event) === key)
+      .filter((event) => typeFilter === "all" || event.event_type === typeFilter)
+      .sort((a, b) => new Date(a.starts_at) - new Date(b.starts_at));
+    const dots = dayEvents.slice(0, 4).map((event) =>
+      `<i class="calendar-dot dot-${escapeHtml(event.event_type)}" aria-hidden="true"></i>`
+    ).join("");
+    const labels = dayEvents.slice(0, 2).map((event) =>
+      `<span class="calendar-cell-event type-${escapeHtml(event.event_type)}">${escapeHtml(event.title)}</span>`
+    ).join("");
+    cells.push(`
+      <button type="button" class="calendar-day ${inMonth ? "" : "outside-month"} ${key === calendarSelectedDate ? "selected" : ""} ${key === todayKey ? "is-today" : ""}"
+        data-calendar-date="${key}" aria-label="${escapeHtml(formatCalendarDate(date, { weekday: "long", day: "numeric", month: "long", year: "numeric" }))}"
+        aria-pressed="${String(key === calendarSelectedDate)}">
+        <span class="calendar-day-number">${date.getDate()}</span>
+        <span class="calendar-cell-events">${labels}</span>
+        <span class="calendar-day-dots">${dots}</span>
+      </button>
+    `);
+  }
+  grid.innerHTML = cells.join("");
+  grid.querySelectorAll("[data-calendar-date]").forEach((button) => {
+    button.addEventListener("click", () => {
+      calendarSelectedDate = button.dataset.calendarDate;
+      renderCalendar();
+      renderCalendarDayEvents();
+    });
+  });
+  renderCalendarDayEvents();
+}
+
+function renderCalendarDayEvents() {
+  const container = $("calendar-day-events");
+  if (!container) return;
+  const typeFilter = $("calendar-type-filter")?.value || "all";
+  const selectedEvents = calendarEvents
+    .filter((event) => calendarEventDateKey(event) === calendarSelectedDate)
+    .filter((event) => typeFilter === "all" || event.event_type === typeFilter)
+    .sort((a, b) => new Date(a.starts_at) - new Date(b.starts_at));
+
+  if (!selectedEvents.length) {
+    container.innerHTML = `
+      <div class="calendar-empty">
+        <span aria-hidden="true">✦</span>
+        <strong>Belum ada agenda</strong>
+        <p>Tambahkan jadwal untuk tanggal ini agar rencana workspace tetap teratur.</p>
+        <button type="button" class="secondary-button" id="calendar-empty-add">+ Tambah agenda</button>
+      </div>`;
+    $("calendar-empty-add")?.addEventListener("click", () => openCalendarEventForm());
+    return;
+  }
+
+  container.innerHTML = selectedEvents.map((event) => {
+    const projectName = calendarEventProjectName(event);
+    const isCreator = String(event.created_by) === String(currentUser?.id);
+    return `
+      <article class="calendar-event-card type-${escapeHtml(event.event_type)}">
+        <div class="calendar-event-time">${escapeHtml(calendarTimeLabel(event))}</div>
+        <div class="calendar-event-main">
+          <div class="calendar-event-title-row">
+            <span class="calendar-type-pill type-${escapeHtml(event.event_type)}">${escapeHtml(calendarTypeLabel(event.event_type))}</span>
+            ${event.reminder_at ? '<span class="calendar-reminder-indicator" title="Waktu pengingat tersimpan">◷ Pengingat</span>' : ""}
+          </div>
+          <h4>${escapeHtml(event.title)}</h4>
+          ${projectName ? `<p class="calendar-event-meta"><span aria-hidden="true">▤</span> ${escapeHtml(projectName)}</p>` : ""}
+          ${event.location ? `<p class="calendar-event-meta"><span aria-hidden="true">⌖</span> ${escapeHtml(event.location)}</p>` : ""}
+          ${event.description ? `<p class="calendar-event-description">${escapeHtml(event.description)}</p>` : ""}
+          ${isCreator ? `<div class="calendar-event-actions"><button type="button" class="text-button" data-calendar-edit="${escapeHtml(event.id)}">Edit</button><button type="button" class="text-button danger-text" data-calendar-delete="${escapeHtml(event.id)}">Hapus</button></div>` : ""}
+        </div>
+      </article>`;
+  }).join("");
+
+  container.querySelectorAll("[data-calendar-edit]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const event = calendarEvents.find((item) => String(item.id) === String(button.dataset.calendarEdit));
+      if (event) openCalendarEventForm(event);
+    });
+  });
+  container.querySelectorAll("[data-calendar-delete]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const event = calendarEvents.find((item) => String(item.id) === String(button.dataset.calendarDelete));
+      if (event) deleteCalendarEvent(event);
+    });
+  });
+}
+
+async function loadCalendarEvents() {
+  const grid = $("calendar-grid");
+  if (!currentUser || !currentWorkspace) {
+    if (grid) grid.innerHTML = '<div class="empty-state"><strong>Workspace belum dibuka</strong><p>Buka workspace untuk melihat kalender.</p></div>';
+    return;
+  }
+
+  const token = ++calendarLoadToken;
+  if (grid) grid.innerHTML = '<div class="calendar-loading">Memuat kalender...</div>';
+
+  const firstDay = new Date(calendarCursor.getFullYear(), calendarCursor.getMonth(), 1);
+  const gridStart = new Date(firstDay.getFullYear(), firstDay.getMonth(), 1 - firstDay.getDay());
+  const gridEnd = new Date(gridStart.getFullYear(), gridStart.getMonth(), gridStart.getDate() + 42);
+  const { data, error } = await supabase
+    .from("calendar_events")
+    .select("*")
+    .eq("workspace_id", currentWorkspace.id)
+    .gte("starts_at", gridStart.toISOString())
+    .lt("starts_at", gridEnd.toISOString())
+    .order("starts_at", { ascending: true });
+
+  if (token !== calendarLoadToken) return;
+  if (error) {
+    console.error("Kalender gagal dimuat:", error);
+    if (grid) {
+      grid.innerHTML = `
+        <div class="empty-state calendar-load-error">
+          <strong>Kalender belum siap</strong>
+          <p>${escapeHtml(/calendar_events|schema cache|relation/i.test(error.message || "")
+            ? "Tabel kalender belum tersedia. Jalankan SQL pada file supabase/migrations/20261014_calendar_events.sql di SQL Editor Supabase."
+            : getErrorMessage(error))}</p>
+          <button id="retry-calendar-load" type="button" class="secondary-button">Coba lagi</button>
+        </div>`;
+      $("retry-calendar-load")?.addEventListener("click", loadCalendarEvents);
+    }
+    if ($("calendar-day-events")) {
+      $("calendar-day-events").innerHTML = '<p class="muted">Agenda belum dapat dimuat.</p>';
+    }
+    return;
+  }
+
+  calendarEvents = data || [];
+  renderCalendar();
+}
+
+function openCalendarEventForm(event = null) {
+  if (!currentUser || !currentWorkspace) {
+    showToast("Buka workspace terlebih dahulu.", "info");
+    return;
+  }
+  if (event && String(event.created_by) !== String(currentUser.id)) {
+    showToast("Hanya pembuat agenda yang dapat mengubahnya.", "error");
+    return;
+  }
+
+  editingCalendarEventId = event?.id || null;
+  const backdrop = $("modal-backdrop");
+  const title = $("modal-title");
+  const body = $("modal-body");
+  const footer = $("modal-footer");
+  if (!backdrop || !title || !body || !footer) {
+    showToast("Formulir kalender tidak ditemukan.", "error");
+    return;
+  }
+
+  const start = event ? new Date(event.starts_at) : new Date(`${calendarSelectedDate}T09:00:00`);
+  const dateValue = localDateKey(start);
+  const timeValue = (date) => {
+    if (!date) return "";
+    const d = new Date(date);
+    return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+  };
+  const reminderValue = event?.reminder_at
+    ? `${localDateKey(new Date(event.reminder_at))}T${timeValue(event.reminder_at)}`
+    : "";
+  const projectOptions = [
+    '<option value="">Tanpa proyek terkait</option>',
+    ...projects.map((project) => `<option value="${escapeHtml(project.id)}" ${String(event?.project_id || "") === String(project.id) ? "selected" : ""}>${escapeHtml(project.name || "Tanpa nama")}</option>`)
+  ].join("");
+
+  title.textContent = event ? "Edit Jadwal" : "Jadwal Baru";
+  body.innerHTML = `
+    <form id="calendar-event-form" class="calendar-event-form">
+      <div class="form-group">
+        <label for="calendar-event-title">Nama kegiatan *</label>
+        <input id="calendar-event-title" maxlength="160" required value="${escapeHtml(event?.title || "")}" placeholder="Contoh: Review progres aplikasi">
+      </div>
+      <div class="calendar-form-grid">
+        <div class="form-group">
+          <label for="calendar-event-type">Jenis kegiatan</label>
+          <select id="calendar-event-type" required>
+            ${[
+              ["project","Proyek / tenggat"],
+              ["agenda","Agenda"],
+              ["meeting","Rapat"],
+              ["reminder","Pengingat"]
+            ].map(([value,label]) => `<option value="${value}" ${(event?.event_type || "agenda") === value ? "selected" : ""}>${label}</option>`).join("")}
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="calendar-event-date">Tanggal *</label>
+          <input id="calendar-event-date" type="date" required value="${dateValue}">
+        </div>
+        <div class="form-group">
+          <label for="calendar-event-start">Jam mulai</label>
+          <input id="calendar-event-start" type="time" value="${event?.all_day ? "" : timeValue(start)}">
+        </div>
+        <div class="form-group">
+          <label for="calendar-event-end">Jam selesai</label>
+          <input id="calendar-event-end" type="time" value="${event?.ends_at && !event?.all_day ? timeValue(event.ends_at) : ""}">
+        </div>
+      </div>
+      <label class="calendar-all-day-option"><input id="calendar-event-all-day" type="checkbox" ${event?.all_day ? "checked" : ""}> Sepanjang hari</label>
+      <div class="form-group">
+        <label for="calendar-event-project">Proyek terkait</label>
+        <select id="calendar-event-project">${projectOptions}</select>
+      </div>
+      <div class="form-group">
+        <label for="calendar-event-location">Lokasi / tautan rapat</label>
+        <input id="calendar-event-location" maxlength="240" value="${escapeHtml(event?.location || "")}" placeholder="Opsional">
+      </div>
+      <div class="form-group">
+        <label for="calendar-event-description">Catatan</label>
+        <textarea id="calendar-event-description" rows="3" maxlength="3000" placeholder="Detail tambahan (opsional)">${escapeHtml(event?.description || "")}</textarea>
+      </div>
+      <div class="form-group">
+        <label for="calendar-event-reminder">Waktu pengingat (opsional)</label>
+        <input id="calendar-event-reminder" type="datetime-local" value="${reminderValue}">
+        <small class="muted">Waktu pengingat disimpan bersama agenda. Notifikasi otomatis akan menjadi tahap pengembangan berikutnya.</small>
+      </div>
+      <p id="calendar-event-error" class="form-error" hidden></p>
+    </form>`;
+
+  footer.innerHTML = `
+    <button type="button" id="cancel-calendar-event" class="secondary-button">Batal</button>
+    <button type="submit" form="calendar-event-form" id="save-calendar-event" class="primary-button">${event ? "Simpan Perubahan" : "Simpan Jadwal"}</button>`;
+  backdrop.classList.remove("hidden");
+  requestAnimationFrame(() => $("calendar-event-title")?.focus());
+
+  $("cancel-calendar-event")?.addEventListener("click", closeProjectForm);
+  $("calendar-event-all-day")?.addEventListener("change", (change) => {
+    const disabled = change.target.checked;
+    $("calendar-event-start").disabled = disabled;
+    $("calendar-event-end").disabled = disabled;
+  });
+  $("calendar-event-all-day")?.dispatchEvent(new Event("change"));
+  $("calendar-event-form")?.addEventListener("submit", saveCalendarEvent);
+}
+
+async function saveCalendarEvent(event) {
+  event.preventDefault();
+  const errorElement = $("calendar-event-error");
+  const button = $("save-calendar-event");
+  const title = $("calendar-event-title")?.value.trim();
+  const type = $("calendar-event-type")?.value;
+  const date = $("calendar-event-date")?.value;
+  const allDay = Boolean($("calendar-event-all-day")?.checked);
+  const startTime = $("calendar-event-start")?.value || "09:00";
+  const endTime = $("calendar-event-end")?.value || "";
+  const reminderInput = $("calendar-event-reminder")?.value || "";
+
+  if (!title || !date || !["project", "agenda", "meeting", "reminder"].includes(type)) {
+    if (errorElement) {
+      errorElement.textContent = "Nama kegiatan, tanggal, dan jenis kegiatan wajib diisi.";
+      errorElement.hidden = false;
+    }
+    return;
+  }
+
+  const startsAt = new Date(`${date}T${allDay ? "00:00" : startTime}:00`);
+  let endsAt = null;
+  if (allDay) {
+    endsAt = new Date(`${date}T23:59:00`);
+  } else if (endTime) {
+    endsAt = new Date(`${date}T${endTime}:00`);
+    if (endsAt < startsAt) {
+      if (errorElement) {
+        errorElement.textContent = "Jam selesai tidak boleh lebih awal dari jam mulai.";
+        errorElement.hidden = false;
+      }
+      return;
+    }
+  }
+
+  const reminderAt = reminderInput ? new Date(reminderInput) : null;
+  if (reminderAt && Number.isNaN(reminderAt.getTime())) {
+    if (errorElement) {
+      errorElement.textContent = "Waktu pengingat tidak valid.";
+      errorElement.hidden = false;
+    }
+    return;
+  }
+
+  const projectId = $("calendar-event-project")?.value || null;
+  if (projectId && !projects.some((project) => String(project.id) === String(projectId))) {
+    if (errorElement) {
+      errorElement.textContent = "Proyek terkait tidak ditemukan di workspace ini.";
+      errorElement.hidden = false;
+    }
+    return;
+  }
+
+  const payload = {
+    workspace_id: currentWorkspace.id,
+    project_id: projectId,
+    title,
+    event_type: type,
+    starts_at: startsAt.toISOString(),
+    ends_at: endsAt ? endsAt.toISOString() : null,
+    all_day: allDay,
+    location: $("calendar-event-location")?.value.trim() || null,
+    description: $("calendar-event-description")?.value.trim() || null,
+    reminder_at: reminderAt ? reminderAt.toISOString() : null
+  };
+
+  if (button) {
+    button.disabled = true;
+    button.textContent = "Menyimpan...";
+  }
+  if (errorElement) {
+    errorElement.hidden = true;
+    errorElement.textContent = "";
+  }
+
+  let result;
+  if (editingCalendarEventId) {
+    result = await supabase.from("calendar_events")
+      .update(payload)
+      .eq("id", editingCalendarEventId)
+      .eq("workspace_id", currentWorkspace.id)
+      .eq("created_by", currentUser.id);
+  } else {
+    result = await supabase.from("calendar_events").insert({
+      ...payload,
+      created_by: currentUser.id
+    });
+  }
+
+  if (result.error) {
+    if (errorElement) {
+      errorElement.textContent = getErrorMessage(result.error);
+      errorElement.hidden = false;
+    }
+    if (button) {
+      button.disabled = false;
+      button.textContent = editingCalendarEventId ? "Simpan Perubahan" : "Simpan Jadwal";
+    }
+    return;
+  }
+
+  const savedDate = date;
+  editingCalendarEventId = null;
+  closeProjectForm();
+  calendarCursor = new Date(Number(savedDate.slice(0, 4)), Number(savedDate.slice(5, 7)) - 1, 1);
+  calendarSelectedDate = savedDate;
+  showToast("Jadwal berhasil disimpan.", "success");
+  await loadCalendarEvents();
+}
+
+async function deleteCalendarEvent(event) {
+  if (!currentUser || String(event.created_by) !== String(currentUser.id)) {
+    showToast("Hanya pembuat agenda yang dapat menghapusnya.", "error");
+    return;
+  }
+  if (!window.confirm(`Hapus jadwal "${event.title}"? Tindakan ini tidak dapat dibatalkan.`)) return;
+
+  const { error } = await supabase.from("calendar_events")
+    .delete()
+    .eq("id", event.id)
+    .eq("workspace_id", currentWorkspace.id)
+    .eq("created_by", currentUser.id);
+  if (error) {
+    showToast("Jadwal gagal dihapus: " + getErrorMessage(error), "error");
+    return;
+  }
+  showToast("Jadwal berhasil dihapus.", "success");
+  await loadCalendarEvents();
+}
+
+$("calendar-prev-month")?.addEventListener("click", async () => {
+  calendarCursor = new Date(calendarCursor.getFullYear(), calendarCursor.getMonth() - 1, 1);
+  await loadCalendarEvents();
+});
+$("calendar-next-month")?.addEventListener("click", async () => {
+  calendarCursor = new Date(calendarCursor.getFullYear(), calendarCursor.getMonth() + 1, 1);
+  await loadCalendarEvents();
+});
+$("calendar-today-button")?.addEventListener("click", async () => {
+  const today = new Date();
+  calendarCursor = new Date(today.getFullYear(), today.getMonth(), 1);
+  calendarSelectedDate = localDateKey(today);
+  await loadCalendarEvents();
+});
+$("calendar-type-filter")?.addEventListener("change", renderCalendar);
+$("add-calendar-event-button")?.addEventListener("click", () => openCalendarEventForm());
+$("calendar-add-selected")?.addEventListener("click", () => openCalendarEventForm());
+
 
 /* Filter dan pencarian proyek */
 document.getElementById("project-search")
