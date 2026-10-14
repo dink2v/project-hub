@@ -513,20 +513,17 @@ async function loadWorkspaces(autoOpenSavedWorkspace = true) {
       return;
     }
 
-    // Saat login biasa, buka otomatis workspace terakhir yang masih bisa diakses.
-    // Saat pengguna memilih Ganti Workspace, tampilkan daftar tanpa membuka otomatis.
+    // Saat login, pendaftaran, atau pemulihan sesi, buka workspace terakhir
+    // yang masih bisa diakses. Jika belum ada pilihan tersimpan, buka workspace
+    // pertama agar pengguna langsung masuk ke Dashboard.
+    // Menu "Ganti Workspace" tetap menampilkan daftar workspace.
     const lastWorkspaceId = localStorage.getItem(LAST_WORKSPACE_STORAGE_KEY);
     const lastWorkspace = autoOpenSavedWorkspace
       ? workspaces.find((workspace) => String(workspace.id) === lastWorkspaceId)
       : null;
 
-    if (lastWorkspace) {
-      await openWorkspace(lastWorkspace);
-      return;
-    }
-
     if (autoOpenSavedWorkspace) {
-      showScreen("workspace-screen");
+      await openWorkspace(lastWorkspace || workspaces[0]);
       return;
     }
 
