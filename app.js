@@ -337,6 +337,7 @@ async function handleLogout() {
     const { error } = await supabase.auth.signOut();
     if (error) throw error;
 
+    stopCalendarRealtime();
     currentUser = null;
     currentWorkspace = null;
     projects = [];
@@ -437,6 +438,7 @@ supabase.auth.onAuthStateChange((event, session) => {
   }
 
   if (event === "SIGNED_OUT") {
+    stopCalendarRealtime();
     currentUser = null;
     currentWorkspace = null;
     projects = [];
@@ -645,6 +647,7 @@ async function openWorkspace(workspace) {
   if (!workspace?.id) return;
 
   currentWorkspace = workspace;
+  setupCalendarRealtime(workspace.id);
 
   // ID ini bukan akses otomatis: keanggotaan tetap diverifikasi dari Supabase.
   localStorage.setItem(LAST_WORKSPACE_STORAGE_KEY, String(workspace.id));
@@ -2286,6 +2289,49 @@ let calendarSelectedDate = localDateKey(new Date());
 let calendarEvents = [];
 let editingCalendarEventId = null;
 let calendarLoadToken = 0;
+let calendarRealtimeChannel = null;
+let calendarRealtimeWorkspaceId = null;
+
+function stopCalendarRealtime() {
+  if (calendarRealtimeChannel) {
+    supabase.removeChannel(calendarRealtimeChannel);
+    calendarRealtimeChannel = null;
+  }
+  calendarRealtimeWorkspaceId = null;
+}
+
+function setupCalendarRealtime(workspaceId) {
+  if (!workspaceId || !currentUser) {
+    stopCalendarRealtime();
+    return;
+  }
+  if (String(calendarRealtimeWorkspaceId) === String(workspaceId) && calendarRealtimeChannel) return;
+
+  stopCalendarRealtime();
+  calendarRealtimeWorkspaceId = String(workspaceId);
+  calendarRealtimeChannel = supabase
+    .channel(`calendar-events-${workspaceId}-${currentUser.id}`)
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "calendar_events",
+        filter: `workspace_id=eq.${workspaceId}`
+      },
+      () => {
+        // Reload only while visible; RLS still controls which rows can be read.
+        if (currentWorkspace && String(currentWorkspace.id) === String(workspaceId) && currentPage === "calendar") {
+          loadCalendarEvents();
+        }
+      }
+    )
+    .subscribe((status) => {
+      if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
+        console.warn("Realtime kalender belum tersambung. Data tetap dapat dimuat ulang saat membuka Kalender.");
+      }
+    });
+}
 
 function localDateKey(date) {
   const year = date.getFullYear();
