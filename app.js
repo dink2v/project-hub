@@ -963,6 +963,7 @@ let meetingRows = [];
 let meetingCanManage = false;
 let editingMeetingId = null;
 let meetingLoadToken = 0;
+let meetingViewProjectId = null;
 
 function renderMeetingWorkspace() {
   const content = $("meeting-content");
@@ -980,6 +981,7 @@ function renderMeetingPanel(content, project) {
   editingMeetingId = null;
   meetingCanManage = false;
   const projectId = project?.id || null;
+  meetingViewProjectId = projectId;
   content.innerHTML =
     '<div class="meeting-panel">' +
       '<div class="meeting-panel-heading"><div><span class="detail-eyebrow">DOKUMENTASI MEETING</span>' +
@@ -1224,8 +1226,7 @@ async function saveMeetingRecord(event, existingMeeting = null) {
     ? "Catatan meeting tersimpan, tetapi sebagian lampiran gagal: " + uploadErrors.join("; ")
     : (existingMeeting ? "Catatan meeting berhasil diperbarui." : "Catatan meeting berhasil disimpan."),
     uploadErrors.length ? "error" : "success");
-  const projectId = activeProjectTab === "meetings" && activeProject ? activeProject.id : null;
-  await loadMeetingRecords(projectId, meetingLoadToken);
+  await loadMeetingRecords(meetingViewProjectId, meetingLoadToken);
 }
 
 async function deleteMeetingRecord(meetingId, projectId = null) {
