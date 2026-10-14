@@ -20,7 +20,7 @@ create table if not exists public.meeting_records (
   created_by uuid not null references auth.users(id) on delete cascade,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
-  constraint meeting_records_valid_time check (ends_at is null or ends_at >= starts_at),
+  constraint meeting_records_valid_time check (ends_at is null or ends_at >= starts_at)
 );
 
 create index if not exists meeting_records_workspace_starts_idx
