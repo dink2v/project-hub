@@ -2663,7 +2663,8 @@ async function saveCalendarEvent(event) {
     all_day: allDay,
     location: $("calendar-event-location")?.value.trim() || null,
     description: $("calendar-event-description")?.value.trim() || null,
-    reminder_at: reminderAt ? reminderAt.toISOString() : null
+    reminder_at: reminderAt ? reminderAt.toISOString() : null,
+    updated_at: new Date().toISOString()
   };
 
   if (button) {
@@ -2732,10 +2733,12 @@ async function deleteCalendarEvent(event) {
 
 $("calendar-prev-month")?.addEventListener("click", async () => {
   calendarCursor = new Date(calendarCursor.getFullYear(), calendarCursor.getMonth() - 1, 1);
+  calendarSelectedDate = localDateKey(calendarCursor);
   await loadCalendarEvents();
 });
 $("calendar-next-month")?.addEventListener("click", async () => {
   calendarCursor = new Date(calendarCursor.getFullYear(), calendarCursor.getMonth() + 1, 1);
+  calendarSelectedDate = localDateKey(calendarCursor);
   await loadCalendarEvents();
 });
 $("calendar-today-button")?.addEventListener("click", async () => {
