@@ -11,7 +11,7 @@
 
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="style.css?v=20261013-signature1">
+  <link rel="stylesheet" href="style.css?v=20261014-calendar1">
 </head>
 
 <body>
@@ -261,6 +261,7 @@
         <p class="nav-label">MENU</p>
         <button data-page="home" class="nav-item active" type="button"><span>⌂</span> Beranda</button>
         <button data-page="projects" class="nav-item" type="button"><span>▤</span> Proyek</button>
+        <button data-page="calendar" class="nav-item" type="button"><span>▦</span> Kalender</button>
         <button data-page="general-notes" class="nav-item" type="button"><span>▧</span> Catatan</button>
         <button id="sidebar-more-toggle" class="nav-item more-menu-toggle" type="button" aria-expanded="false" aria-controls="sidebar-more-menu"><span>•••</span> Lainnya <span class="more-chevron">⌄</span></button>
         <div id="sidebar-more-menu" class="nav-submenu hidden">
@@ -316,6 +317,7 @@
       <nav id="mobile-nav" class="mobile-nav hidden" aria-label="Navigasi aplikasi">
         <button data-page="home" type="button">⌂ Beranda</button>
         <button data-page="projects" type="button">▤ Proyek</button>
+        <button data-page="calendar" type="button">▦ Kalender</button>
         <button data-page="general-notes" type="button">▧ Catatan</button>
         <button id="mobile-more-toggle" type="button" class="more-menu-toggle" aria-expanded="false" aria-controls="mobile-more-menu">••• Lainnya <span class="more-chevron">⌄</span></button>
         <div id="mobile-more-menu" class="nav-submenu mobile-submenu hidden">
@@ -552,6 +554,65 @@
           </div>
         </section>
 
+        <!-- KALENDER WORKSPACE -->
+        <section id="page-calendar" class="page hidden">
+          <div class="page-intro calendar-page-intro">
+            <div>
+              <h2>Kalender</h2>
+              <p>Atur jadwal proyek, agenda, rapat, dan pengingat workspace.</p>
+            </div>
+            <button id="add-calendar-event-button" class="primary-button" type="button">+ Jadwal Baru</button>
+          </div>
+
+          <section class="calendar-toolbar content-card" aria-label="Navigasi kalender">
+            <div class="calendar-month-navigation">
+              <button id="calendar-prev-month" class="icon-button" type="button" aria-label="Bulan sebelumnya">‹</button>
+              <button id="calendar-today-button" class="secondary-button" type="button">Hari ini</button>
+              <button id="calendar-next-month" class="icon-button" type="button" aria-label="Bulan berikutnya">›</button>
+              <h3 id="calendar-month-label">Memuat kalender...</h3>
+            </div>
+            <label class="calendar-filter-label" for="calendar-type-filter">
+              <span>Jenis agenda</span>
+              <select id="calendar-type-filter">
+                <option value="all">Semua jenis</option>
+                <option value="project">Proyek</option>
+                <option value="agenda">Agenda</option>
+                <option value="meeting">Rapat</option>
+                <option value="reminder">Pengingat</option>
+              </select>
+            </label>
+          </section>
+
+          <div class="calendar-layout">
+            <section class="calendar-month-card" aria-label="Kalender bulanan">
+              <div class="calendar-weekdays" aria-hidden="true">
+                <span>Min</span><span>Sen</span><span>Sel</span><span>Rab</span><span>Kam</span><span>Jum</span><span>Sab</span>
+              </div>
+              <div id="calendar-grid" class="calendar-grid" aria-label="Tanggal dalam bulan"></div>
+              <div class="calendar-legend">
+                <span><i class="calendar-dot dot-project"></i>Proyek</span>
+                <span><i class="calendar-dot dot-agenda"></i>Agenda</span>
+                <span><i class="calendar-dot dot-meeting"></i>Rapat</span>
+                <span><i class="calendar-dot dot-reminder"></i>Pengingat</span>
+              </div>
+            </section>
+
+            <aside class="calendar-agenda-card content-card" aria-label="Agenda tanggal terpilih">
+              <div class="calendar-agenda-heading">
+                <div>
+                  <span class="calendar-eyebrow">AGENDA HARIAN</span>
+                  <h3 id="calendar-selected-date">Pilih tanggal</h3>
+                </div>
+                <button id="calendar-add-selected" class="icon-button" type="button" aria-label="Tambah agenda pada tanggal terpilih">+</button>
+              </div>
+              <div id="calendar-day-events" class="calendar-day-events">
+                <div class="empty-state"><strong>Memuat agenda...</strong><p>Jadwal workspace akan ditampilkan di sini.</p></div>
+              </div>
+            </aside>
+          </div>
+          <p class="calendar-footnote">Agenda dibagikan di workspace. Pengubahan dan penghapusan hanya tersedia untuk pembuat agenda.</p>
+        </section>
+
         <!-- DETAIL PROYEK -->
         <section id="page-project-detail" class="page hidden">
           <div class="page-intro">
@@ -623,7 +684,7 @@
   </div>
 
   <!-- JAVASCRIPT UTAMA -->
-  <script type="module" src="app.js?v=20261013-batchui1"></script>
+  <script type="module" src="app.js?v=20261014-calendar1"></script>
 
   <!-- SERVICE WORKER PWA -->
   <script>
