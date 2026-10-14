@@ -1222,6 +1222,7 @@ async function saveMeetingRecord(event, existingMeeting = null) {
     if (attachResult.error) uploadErrors.push("Metadata lampiran gagal disimpan: " + getErrorMessage(attachResult.error));
   }
   editingMeetingId = null;
+  $("meeting-form-container")?.replaceChildren();
   showToast(uploadErrors.length
     ? "Catatan meeting tersimpan, tetapi sebagian lampiran gagal: " + uploadErrors.join("; ")
     : (existingMeeting ? "Catatan meeting berhasil diperbarui." : "Catatan meeting berhasil disimpan."),
