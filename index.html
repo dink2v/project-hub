@@ -11,7 +11,7 @@
 
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="style.css?v=20261014-calendar3">
+  <link rel="stylesheet" href="style.css?v=20261016-meeting1">
 </head>
 
 <body>
@@ -263,6 +263,7 @@
         <button data-page="projects" class="nav-item" type="button"><span>▤</span> Proyek</button>
         <button data-page="calendar" class="nav-item" type="button"><span>▦</span> Kalender</button>
         <button data-page="general-notes" class="nav-item" type="button"><span>▧</span> Catatan</button>
+        <button data-page="meetings" class="nav-item" type="button"><span>▣</span> Catatan Meeting</button>
         <button id="sidebar-more-toggle" class="nav-item more-menu-toggle" type="button" aria-expanded="false" aria-controls="sidebar-more-menu"><span>•••</span> Lainnya <span class="more-chevron">⌄</span></button>
         <div id="sidebar-more-menu" class="nav-submenu hidden">
           <button data-page="users" class="nav-item" type="button"><span>♙</span> Anggota</button>
@@ -319,6 +320,7 @@
         <button data-page="projects" type="button">▤ Proyek</button>
         <button data-page="calendar" type="button">▦ Kalender</button>
         <button data-page="general-notes" type="button">▧ Catatan</button>
+        <button data-page="meetings" type="button">▣ Catatan Meeting</button>
         <button id="mobile-more-toggle" type="button" class="more-menu-toggle" aria-expanded="false" aria-controls="mobile-more-menu">••• Lainnya <span class="more-chevron">⌄</span></button>
         <div id="mobile-more-menu" class="nav-submenu mobile-submenu hidden">
           <button data-page="users" type="button">Anggota</button>
@@ -462,6 +464,12 @@
               <p>Catatan umum workspace akan ditampilkan di sini.</p>
             </div>
           </div>
+        </section>
+
+        <!-- CATATAN MEETING -->
+        <section id="page-meetings" class="page hidden">
+          <div class="page-intro"><div><h2>Catatan Meeting</h2><p>Agenda, keputusan, peserta, dan tindak lanjut meeting workspace.</p></div></div>
+          <div class="content-card"><div id="meeting-content"><p>Catatan meeting akan ditampilkan di sini.</p></div></div>
         </section>
 
         <!-- ANGGOTA WORKSPACE -->
@@ -643,6 +651,9 @@
             <button data-tab="revisions" type="button">
               Revisi
             </button>
+            <button data-tab="meetings" type="button">
+              Meeting
+            </button>
           </div>
 
           <div id="project-detail-content" class="content-card">
@@ -684,7 +695,7 @@
   </div>
 
   <!-- JAVASCRIPT UTAMA -->
-  <script type="module" src="app.js?v=20261014-calendar3"></script>
+  <script type="module" src="app.js?v=20261016-meeting1"></script>
 
   <!-- SERVICE WORKER PWA -->
   <script>

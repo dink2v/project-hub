@@ -955,6 +955,304 @@ async function deleteGeneralNote(note, workspaceId) {
 }
 
 
+
+/* =========================================
+   CATATAN MEETING WORKSPACE + PROYEK
+========================================= */
+let meetingRows = [];
+let meetingCanManage = false;
+let editingMeetingId = null;
+let meetingLoadToken = 0;
+let meetingViewProjectId = null;
+
+function renderMeetingWorkspace() {
+  const content = $("meeting-content");
+  if (!content) return;
+  renderMeetingPanel(content, null);
+}
+
+function renderProjectMeetings(content, project) {
+  renderMeetingPanel(content, project);
+}
+
+function renderMeetingPanel(content, project) {
+  const token = ++meetingLoadToken;
+  meetingRows = [];
+  editingMeetingId = null;
+  meetingCanManage = false;
+  const projectId = project?.id || null;
+  meetingViewProjectId = projectId;
+  content.innerHTML =
+    '<div class="meeting-panel">' +
+      '<div class="meeting-panel-heading"><div><span class="detail-eyebrow">DOKUMENTASI MEETING</span>' +
+      '<h3>' + (project ? 'Meeting Proyek' : 'Catatan Meeting') + '</h3>' +
+      '<p>' + (project ? 'Catatan rapat dan tindak lanjut untuk proyek ini.' : 'Kelola catatan meeting dari seluruh proyek di workspace.') + '</p></div>' +
+      '<button type="button" class="primary-button" id="add-meeting-button" hidden>+ Catat Meeting</button></div>' +
+      '<div id="meeting-form-container"></div>' +
+      '<div id="meeting-list" class="meeting-list"><div class="loading-state">Memuat catatan meeting...</div></div>' +
+    '</div>';
+  $("add-meeting-button")?.addEventListener("click", () => renderMeetingForm(null, projectId));
+  loadMeetingRecords(projectId, token);
+}
+
+async function loadMeetingRecords(projectId = null, token = meetingLoadToken) {
+  const list = $("meeting-list");
+  if (!list || !currentWorkspace) return;
+  const workspaceId = currentWorkspace.id;
+  const [roleResult, meetingsResult] = await Promise.all([
+    supabase.rpc("workspace_role", { p_workspace_id: workspaceId }),
+    (() => {
+      let query = supabase.from("meeting_records").select("*")
+        .eq("workspace_id", workspaceId)
+        .order("starts_at", { ascending: false });
+      if (projectId) query = query.eq("project_id", projectId);
+      return query;
+    })()
+  ]);
+  if (token !== meetingLoadToken || !document.getElementById("meeting-list") || currentWorkspace?.id !== workspaceId) return;
+  meetingCanManage = !roleResult.error && ["Owner", "Editor"].includes(roleResult.data);
+  const addButton = $("add-meeting-button");
+  if (addButton) addButton.hidden = !meetingCanManage;
+  if (meetingsResult.error) {
+    list.innerHTML = '<div class="empty-state"><strong>Catatan meeting gagal dimuat</strong><p id="meeting-load-error"></p><button type="button" class="secondary-button" id="retry-meetings">Coba lagi</button></div>';
+    $("meeting-load-error").textContent = getErrorMessage(meetingsResult.error);
+    $("retry-meetings")?.addEventListener("click", () => loadMeetingRecords(projectId, token));
+    return;
+  }
+  meetingRows = meetingsResult.data || [];
+  renderMeetingList(projectId);
+}
+
+function renderMeetingList(projectId = null) {
+  const list = $("meeting-list");
+  if (!list) return;
+  if (!meetingRows.length) {
+    list.innerHTML = '<div class="empty-state"><div class="empty-icon" aria-hidden="true">▤</div><strong>Belum ada catatan meeting</strong><p>Catat agenda, hasil pembahasan, keputusan, dan tindak lanjut meeting di sini.</p>' +
+      (meetingCanManage ? '<button type="button" class="primary-button" id="meeting-empty-add">+ Catat Meeting Pertama</button>' : '') + '</div>';
+    $("meeting-empty-add")?.addEventListener("click", () => renderMeetingForm(null, projectId));
+    return;
+  }
+  list.innerHTML = meetingRows.map((meeting) => {
+    const project = projects.find((item) => String(item.id) === String(meeting.project_id));
+    const participants = Array.isArray(meeting.participants) ? meeting.participants : [];
+    const actions = Array.isArray(meeting.action_items) ? meeting.action_items : [];
+    const attachments = Array.isArray(meeting.attachments) ? meeting.attachments : [];
+    const attendance = participants.length
+      ? participants.map((p) => '<span class="meeting-chip">' + escapeHtml(p.name || "Peserta") + ' · ' + escapeHtml(p.attendance || "Belum diisi") + '</span>').join("")
+      : '<span class="meeting-muted">Peserta belum dicatat</span>';
+    const actionMarkup = actions.length
+      ? '<ul class="meeting-action-list">' + actions.map((a) => '<li><strong>' + escapeHtml(a.title || "Tindak lanjut") + '</strong><span>' + escapeHtml(a.assignee || "Belum ditentukan") + (a.due_date ? ' · Tenggat ' + escapeHtml(a.due_date) : '') + '</span></li>').join("") + '</ul>'
+      : '<p class="meeting-muted">Belum ada tindak lanjut.</p>';
+    const attachmentMarkup = attachments.length
+      ? '<div class="meeting-attachments">' + attachments.map((a) => '<button type="button" class="text-button" data-meeting-attachment="' + escapeHtml(a.path || "") + '" data-meeting-file-name="' + escapeHtml(a.name || "Lampiran") + '">📎 ' + escapeHtml(a.name || "Lampiran") + '</button>').join("") + '</div>'
+      : '';
+    return '<article class="meeting-card">' +
+      '<div class="meeting-card-heading"><div><span class="detail-eyebrow">' + escapeHtml(formatProjectDate(meeting.starts_at)) + '</span><h4>' + escapeHtml(meeting.title) + '</h4>' +
+      '<p>' + escapeHtml(project?.name || (meeting.project_id ? "Proyek tidak tersedia" : "Meeting workspace")) + (meeting.location ? ' · ' + escapeHtml(meeting.location) : '') + '</p></div>' +
+      (meetingCanManage ? '<div class="meeting-card-actions"><button type="button" class="secondary-button" data-meeting-edit="' + escapeHtml(meeting.id) + '">Edit</button><button type="button" class="danger-button" data-meeting-delete="' + escapeHtml(meeting.id) + '">Hapus</button></div>' : '') + '</div>' +
+      (meeting.agenda ? '<div class="meeting-section"><strong>Agenda</strong><p>' + escapeHtml(meeting.agenda) + '</p></div>' : '') +
+      (meeting.discussion ? '<div class="meeting-section"><strong>Hasil pembahasan</strong><p>' + escapeHtml(meeting.discussion) + '</p></div>' : '') +
+      (meeting.decisions ? '<div class="meeting-section"><strong>Keputusan meeting</strong><p>' + escapeHtml(meeting.decisions) + '</p></div>' : '') +
+      '<div class="meeting-section"><strong>Peserta & kehadiran</strong><div class="meeting-chips">' + attendance + '</div></div>' +
+      '<div class="meeting-section"><strong>Tindak lanjut</strong>' + actionMarkup + '</div>' +
+      (attachmentMarkup ? '<div class="meeting-section"><strong>Lampiran</strong>' + attachmentMarkup + '</div>' : '') +
+      '</article>';
+  }).join("");
+  list.querySelectorAll("[data-meeting-edit]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const meeting = meetingRows.find((item) => item.id === button.dataset.meetingEdit);
+      if (meeting) renderMeetingForm(meeting, projectId);
+    });
+  });
+  list.querySelectorAll("[data-meeting-delete]").forEach((button) => {
+    button.addEventListener("click", () => deleteMeetingRecord(button.dataset.meetingDelete, projectId));
+  });
+  list.querySelectorAll("[data-meeting-attachment]").forEach((button) => {
+    button.addEventListener("click", async () => {
+      const { data, error } = await supabase.storage.from("project-hub-meeting-files")
+        .createSignedUrl(button.dataset.meetingAttachment, 60);
+      if (error || !data?.signedUrl) {
+        showToast("Lampiran tidak dapat dibuka: " + getErrorMessage(error), "error");
+        return;
+      }
+      window.open(data.signedUrl, "_blank", "noopener,noreferrer");
+    });
+  });
+}
+
+function meetingDateTimeLocal(value) {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+  return local.toISOString().slice(0, 16);
+}
+
+function renderMeetingForm(meeting = null, projectId = null) {
+  const container = $("meeting-form-container");
+  if (!container || !currentWorkspace || !meetingCanManage) return;
+  editingMeetingId = meeting?.id || null;
+  const participantLines = (Array.isArray(meeting?.participants) ? meeting.participants : [])
+    .map((p) => [p.name || "", p.email || "", p.attendance || "Hadir"].join(" | ")).join("\n");
+  const actionLines = (Array.isArray(meeting?.action_items) ? meeting.action_items : [])
+    .map((a) => [a.title || "", a.assignee || "", a.due_date || ""].join(" | ")).join("\n");
+  const projectOptions = ['<option value="">Meeting workspace (tanpa proyek)</option>'].concat(
+    projects.map((p) => '<option value="' + escapeHtml(p.id) + '"' +
+      (String(meeting?.project_id || projectId || "") === String(p.id) ? " selected" : "") + '>' +
+      escapeHtml(p.name || "Tanpa nama") + '</option>')
+  ).join("");
+  container.innerHTML =
+    '<form id="meeting-form" class="meeting-form">' +
+      '<div class="meeting-form-heading"><strong>' + (meeting ? "Edit Catatan Meeting" : "Catat Meeting Baru") + '</strong><button type="button" class="text-button" id="cancel-meeting-form">Batal</button></div>' +
+      '<div class="meeting-form-grid">' +
+        '<div class="form-group"><label for="meeting-title">Judul meeting *</label><input id="meeting-title" maxlength="160" required placeholder="Contoh: Evaluasi progres proyek" value="' + escapeHtml(meeting?.title || "") + '"></div>' +
+        '<div class="form-group"><label for="meeting-project">Proyek terkait</label><select id="meeting-project">' + projectOptions + '</select></div>' +
+        '<div class="form-group"><label for="meeting-starts">Tanggal & waktu *</label><input id="meeting-starts" type="datetime-local" required value="' + escapeHtml(meetingDateTimeLocal(meeting?.starts_at)) + '"></div>' +
+        '<div class="form-group"><label for="meeting-ends">Selesai (opsional)</label><input id="meeting-ends" type="datetime-local" value="' + escapeHtml(meetingDateTimeLocal(meeting?.ends_at)) + '"></div>' +
+        '<div class="form-group meeting-form-wide"><label for="meeting-location">Lokasi / tautan meeting</label><input id="meeting-location" maxlength="300" placeholder="Contoh: Ruang rapat / tautan video" value="' + escapeHtml(meeting?.location || "") + '"></div>' +
+        '<div class="form-group meeting-form-wide"><label for="meeting-agenda">Agenda</label><textarea id="meeting-agenda" rows="3" maxlength="10000" placeholder="Topik yang dibahas...">' + escapeHtml(meeting?.agenda || "") + '</textarea></div>' +
+        '<div class="form-group meeting-form-wide"><label for="meeting-discussion">Hasil pembahasan</label><textarea id="meeting-discussion" rows="3" maxlength="10000" placeholder="Ringkasan pembahasan...">' + escapeHtml(meeting?.discussion || "") + '</textarea></div>' +
+        '<div class="form-group meeting-form-wide"><label for="meeting-decisions">Keputusan meeting</label><textarea id="meeting-decisions" rows="3" maxlength="10000" placeholder="Keputusan yang disepakati...">' + escapeHtml(meeting?.decisions || "") + '</textarea></div>' +
+        '<div class="form-group meeting-form-wide"><label for="meeting-participants">Peserta dan kehadiran</label><textarea id="meeting-participants" rows="4" placeholder="Satu peserta per baris: Nama | Email (opsional) | Hadir/Tidak Hadir/Izin">' + escapeHtml(participantLines) + '</textarea><small>Format: Nama | Email (opsional) | status kehadiran.</small></div>' +
+        '<div class="form-group meeting-form-wide"><label for="meeting-actions">Tindak lanjut</label><textarea id="meeting-actions" rows="4" placeholder="Satu tugas per baris: Tugas | Penanggung jawab | YYYY-MM-DD">' + escapeHtml(actionLines) + '</textarea><small>Format: Tugas | Nama penanggung jawab | tanggal tenggat (opsional).</small></div>' +
+        '<div class="form-group meeting-form-wide"><label for="meeting-files">Lampiran file / dokumen</label><input id="meeting-files" type="file" multiple accept=".pdf,.jpg,.jpeg,.png,.webp,.txt,.doc,.docx,.xls,.xlsx,.ppt,.pptx"><small>Maksimal 10 MB per file. File yang sudah ada tetap tersimpan saat mengedit.</small></div>' +
+      '</div><p id="meeting-form-error" class="form-error" hidden></p>' +
+      '<div class="meeting-form-actions"><button type="submit" class="primary-button" id="save-meeting-button">' + (meeting ? "Simpan Perubahan" : "Simpan Meeting") + '</button></div>' +
+    '</form>';
+  $("cancel-meeting-form")?.addEventListener("click", () => {
+    editingMeetingId = null;
+    container.replaceChildren();
+  });
+  $("meeting-form")?.addEventListener("submit", (event) => saveMeetingRecord(event, meeting));
+  $("meeting-title")?.focus();
+}
+
+function parseMeetingLines(value, type) {
+  return String(value || "").split(/\r?\n/).map((line) => line.trim()).filter(Boolean).map((line) => {
+    const parts = line.split("|").map((part) => part.trim());
+    if (type === "participant") {
+      return { name: parts[0] || "", email: parts[1] || "", attendance: parts[2] || "Hadir" };
+    }
+    return { title: parts[0] || "", assignee: parts[1] || "", due_date: parts[2] || "" };
+  }).filter((item) => type === "participant" ? item.name : item.title);
+}
+
+async function saveMeetingRecord(event, existingMeeting = null) {
+  event.preventDefault();
+  const form = $("meeting-form");
+  const button = $("save-meeting-button");
+  const errorElement = $("meeting-form-error");
+  if (!form || !currentUser || !currentWorkspace || !meetingCanManage) {
+    showToast("Kamu tidak memiliki izin untuk menyimpan catatan meeting.", "error");
+    return;
+  }
+  const title = $("meeting-title")?.value.trim();
+  const starts = $("meeting-starts")?.value;
+  const ends = $("meeting-ends")?.value;
+  if (!title || !starts) {
+    errorElement.textContent = "Judul, tanggal, dan waktu meeting wajib diisi.";
+    errorElement.hidden = false;
+    return;
+  }
+  if (ends && new Date(ends).getTime() < new Date(starts).getTime()) {
+    errorElement.textContent = "Waktu selesai tidak boleh lebih awal dari waktu mulai.";
+    errorElement.hidden = false;
+    return;
+  }
+  const files = Array.from($("meeting-files")?.files || []);
+  const maxBytes = 10 * 1024 * 1024;
+  const tooLarge = files.find((file) => file.size > maxBytes);
+  if (tooLarge) {
+    errorElement.textContent = 'File "' + tooLarge.name + '" melebihi batas 10 MB.';
+    errorElement.hidden = false;
+    return;
+  }
+  const payload = {
+    workspace_id: currentWorkspace.id,
+    project_id: $("meeting-project")?.value || null,
+    title,
+    starts_at: new Date(starts).toISOString(),
+    ends_at: ends ? new Date(ends).toISOString() : null,
+    location: $("meeting-location")?.value.trim() || null,
+    agenda: $("meeting-agenda")?.value.trim() || "",
+    discussion: $("meeting-discussion")?.value.trim() || "",
+    decisions: $("meeting-decisions")?.value.trim() || "",
+    participants: parseMeetingLines($("meeting-participants")?.value, "participant"),
+    action_items: parseMeetingLines($("meeting-actions")?.value, "action"),
+    updated_at: new Date().toISOString()
+  };
+  button.disabled = true;
+  button.textContent = "Menyimpan...";
+  errorElement.hidden = true;
+  let meetingId = existingMeeting?.id || null;
+  let result;
+  if (meetingId) {
+    result = await supabase.from("meeting_records").update(payload)
+      .eq("id", meetingId).eq("workspace_id", currentWorkspace.id);
+  } else {
+    result = await supabase.from("meeting_records")
+      .insert({ ...payload, created_by: currentUser.id })
+      .select("id").single();
+    if (!result.error) meetingId = result.data.id;
+  }
+  if (result.error) {
+    errorElement.textContent = getErrorMessage(result.error);
+    errorElement.hidden = false;
+    button.disabled = false;
+    button.textContent = existingMeeting ? "Simpan Perubahan" : "Simpan Meeting";
+    return;
+  }
+  let uploadedAttachments = Array.isArray(existingMeeting?.attachments) ? [...existingMeeting.attachments] : [];
+  const uploadErrors = [];
+  for (const file of files) {
+    const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_").slice(-120) || "lampiran";
+    const path = currentWorkspace.id + "/" + meetingId + "/" + crypto.randomUUID() + "-" + safeName;
+    const upload = await supabase.storage.from("project-hub-meeting-files")
+      .upload(path, file, { upsert: false, contentType: file.type || "application/octet-stream" });
+    if (upload.error) {
+      uploadErrors.push(file.name + ": " + getErrorMessage(upload.error));
+    } else {
+      uploadedAttachments.push({ name: file.name, path, size: file.size, type: file.type || "application/octet-stream" });
+    }
+  }
+  if (files.length && uploadedAttachments.length) {
+    const attachResult = await supabase.from("meeting_records")
+      .update({ attachments: uploadedAttachments, updated_at: new Date().toISOString() })
+      .eq("id", meetingId).eq("workspace_id", currentWorkspace.id);
+    if (attachResult.error) uploadErrors.push("Metadata lampiran gagal disimpan: " + getErrorMessage(attachResult.error));
+  }
+  editingMeetingId = null;
+  $("meeting-form-container")?.replaceChildren();
+  showToast(uploadErrors.length
+    ? "Catatan meeting tersimpan, tetapi sebagian lampiran gagal: " + uploadErrors.join("; ")
+    : (existingMeeting ? "Catatan meeting berhasil diperbarui." : "Catatan meeting berhasil disimpan."),
+    uploadErrors.length ? "error" : "success");
+  await loadMeetingRecords(meetingViewProjectId, meetingLoadToken);
+}
+
+async function deleteMeetingRecord(meetingId, projectId = null) {
+  const meeting = meetingRows.find((item) => item.id === meetingId);
+  if (!meeting || !meetingCanManage) return;
+  if (!window.confirm('Hapus catatan meeting "' + meeting.title + '" beserta lampirannya? Tindakan ini tidak dapat dibatalkan.')) return;
+  const attachments = Array.isArray(meeting.attachments) ? meeting.attachments : [];
+  const paths = attachments.map((item) => item.path).filter(Boolean);
+  if (paths.length) {
+    const removeResult = await supabase.storage.from("project-hub-meeting-files").remove(paths);
+    if (removeResult.error) {
+      showToast("Lampiran gagal dihapus: " + getErrorMessage(removeResult.error), "error");
+      return;
+    }
+  }
+  const { error } = await supabase.from("meeting_records").delete()
+    .eq("id", meetingId).eq("workspace_id", currentWorkspace.id);
+  if (error) {
+    showToast("Catatan meeting gagal dihapus: " + getErrorMessage(error), "error");
+    return;
+  }
+  showToast("Catatan meeting berhasil dihapus.", "success");
+  await loadMeetingRecords(projectId, meetingLoadToken);
+}
+
 /* =========================================
    NAVIGASI HALAMAN
 ========================================= */
@@ -1010,6 +1308,7 @@ async function navigateTo(page) {
     projects: "Data Proyek",
     calendar: "Kalender",
     "general-notes": "Catatan Umum",
+    meetings: "Catatan Meeting",
     users: "Anggota",
     settings: "Pengaturan",
     "project-detail": "Detail Proyek"
@@ -1046,6 +1345,10 @@ async function navigateTo(page) {
 
   if (page === "general-notes" && typeof loadGeneralNotes === "function") {
     await loadGeneralNotes();
+  }
+
+  if (page === "meetings" && typeof renderMeetingWorkspace === "function") {
+    renderMeetingWorkspace();
   }
 
 }
@@ -1489,6 +1792,11 @@ function renderProjectDetail() {
 
   if (activeProjectTab === "notes") {
     renderProjectNotes(content, activeProject);
+    return;
+  }
+
+  if (activeProjectTab === "meetings") {
+    renderProjectMeetings(content, activeProject);
     return;
   }
 
@@ -1997,7 +2305,7 @@ async function deleteFeature(featureId) {
 }
 
 function setProjectDetailTab(tab) {
-  const validTabs = ["info", "features", "notes", "revisions"];
+  const validTabs = ["info", "features", "notes", "revisions", "meetings"];
   if (!validTabs.includes(tab)) return;
   activeProjectTab = tab;
   renderProjectDetail();
