@@ -21,12 +21,6 @@ create table if not exists public.meeting_records (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   constraint meeting_records_valid_time check (ends_at is null or ends_at >= starts_at),
-  constraint meeting_records_project_workspace check (
-    project_id is null or exists (
-      select 1 from public.projects p
-      where p.id = project_id and p.workspace_id = workspace_id
-    )
-  )
 );
 
 create index if not exists meeting_records_workspace_starts_idx
