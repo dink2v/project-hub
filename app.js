@@ -38,6 +38,20 @@ let authMode = "login";
 
 const $ = (id) => document.getElementById(id);
 
+// Link undangan dapat dibagikan seperti link Google Docs: siapa pun yang
+// memilikinya dapat bergabung selama link masih berlaku.
+const INVITE_STORAGE_KEY = "project_hub_pending_invite";
+let pendingInviteToken = new URLSearchParams(window.location.search).get("invite");
+
+if (pendingInviteToken) {
+  localStorage.setItem(INVITE_STORAGE_KEY, pendingInviteToken);
+  const cleanUrl = new URL(window.location.href);
+  cleanUrl.searchParams.delete("invite");
+  window.history.replaceState({}, document.title, cleanUrl.pathname + cleanUrl.search + cleanUrl.hash);
+} else {
+  pendingInviteToken = localStorage.getItem(INVITE_STORAGE_KEY);
+}
+
 /* =========================================
    UTILITAS
 ========================================= */
@@ -329,7 +343,54 @@ setButtonLoading(button, false);
 async function afterLogin() {
   if (!currentUser) return;
 
+  if (pendingInviteToken) {
+    try {
+      await completeWorkspaceInvite(pendingInviteToken);
+      return;
+    } catch (error) {
+      console.error("Penerimaan undangan gagal:", error);
+      pendingInviteToken = null;
+      localStorage.removeItem(INVITE_STORAGE_KEY);
+      showToast(
+        "Link undangan tidak valid atau kedaluwarsa. Kamu tetap bisa membuka workspace yang sudah kamu miliki.",
+        "error"
+      );
+    }
+  }
+
   await loadWorkspaces(true);
+}
+
+async function completeWorkspaceInvite(token) {
+  if (!currentUser) {
+    throw new Error("Masuk atau daftar terlebih dahulu untuk menerima undangan.");
+  }
+
+  const { data, error } = await supabase.rpc("accept_workspace_invite", {
+    p_token: token
+  });
+
+  if (error) throw error;
+
+  const invite = Array.isArray(data) ? data[0] : data;
+  if (!invite?.workspace_id) {
+    throw new Error("Supabase tidak mengembalikan workspace dari undangan.");
+  }
+
+  pendingInviteToken = null;
+  localStorage.removeItem(INVITE_STORAGE_KEY);
+  localStorage.removeItem(LAST_WORKSPACE_STORAGE_KEY);
+
+  const cleanUrl = new URL(window.location.href);
+  cleanUrl.searchParams.delete("invite");
+  window.history.replaceState({}, document.title, cleanUrl.pathname + cleanUrl.search + cleanUrl.hash);
+
+  showToast("Berhasil bergabung ke " + invite.workspace_name + ".", "success");
+  await openWorkspace({
+    id: invite.workspace_id,
+    name: invite.workspace_name,
+    role: invite.role
+  });
 }
 
 async function handleLogout() {
@@ -412,6 +473,12 @@ async function initializeAuth() {
     currentUser = null;
     showScreen("auth-screen");
     setAuthMode("login");
+    if (pendingInviteToken) {
+      showAuthMessage(
+        "Kamu mendapat undangan workspace. Masuk atau daftar terlebih dahulu; setelah undangan diterima, Project Hub akan langsung membuka Dashboard workspace tersebut.",
+        "info"
+      );
+    }
     return;
   }
 
@@ -752,11 +819,93 @@ function handleInviteButtonClick() {
   }
 
   if (currentWorkspace.role !== "Owner") {
-    showToast("Peran kamu belum memiliki izin untuk mengundang anggota.", "error");
+    showToast("Hanya Owner yang dapat membuat link undangan.", "error");
     return;
   }
 
-  showToast("Halaman Anggota sudah aktif. Sistem undangan perlu disambungkan ke fungsi undangan aman di Supabase sebelum undangan dikirim.", "info");
+  const backdrop = $("modal-backdrop");
+  const body = $("modal-body");
+  const footer = $("modal-footer");
+  if (!backdrop || !body || !footer) {
+    showToast("Dialog undangan tidak tersedia. Muat ulang halaman lalu coba lagi.", "error");
+    return;
+  }
+
+  $("modal-title").textContent = "Bagikan workspace";
+  body.innerHTML = `
+    <p class="muted">Buat link seperti berbagi Google Docs. Siapa pun yang memiliki link dapat bergabung ke workspace ini sampai link kedaluwarsa.</p>
+    <div class="form-group">
+      <label for="invite-role">Izin anggota</label>
+      <select id="invite-role">
+        <option value="Viewer">Viewer — hanya melihat</option>
+        <option value="Editor">Editor — melihat dan mengubah konten</option>
+      </select>
+    </div>
+    <p class="muted small">Link berlaku selama 30 hari. Bagikan hanya kepada orang yang kamu percaya.</p>
+    <div id="invite-link-result"></div>
+  `;
+  footer.innerHTML = `
+    <button id="invite-cancel-button" class="secondary-button" type="button">Tutup</button>
+    <button id="invite-create-button" class="primary-button" type="button">Buat link undangan</button>
+  `;
+  backdrop.classList.remove("hidden");
+
+  $("invite-cancel-button")?.addEventListener("click", closeProjectForm);
+  $("invite-create-button")?.addEventListener("click", async () => {
+    const button = $("invite-create-button");
+    const role = $("invite-role")?.value || "Viewer";
+    setButtonLoading(button, true, "Membuat link...");
+
+    try {
+      const { data, error } = await supabase.rpc("create_workspace_invite", {
+        p_workspace_id: currentWorkspace.id,
+        p_role: role
+      });
+      if (error) throw error;
+
+      const invite = Array.isArray(data) ? data[0] : data;
+      if (!invite?.token) {
+        throw new Error("Supabase tidak mengembalikan token undangan.");
+      }
+
+      const inviteUrl = new URL(window.location.href);
+      inviteUrl.search = "";
+      inviteUrl.hash = "";
+      inviteUrl.searchParams.set("invite", invite.token);
+
+      const result = $("invite-link-result");
+      if (result) {
+        result.innerHTML = `
+          <div class="form-group">
+            <label for="generated-invite-link">Link undangan</label>
+            <input id="generated-invite-link" type="text" readonly>
+          </div>
+          <p class="muted small">Peran: ${escapeHtml(invite.role)} · Berlaku sampai ${escapeHtml(new Date(invite.expires_at).toLocaleDateString("id-ID"))}.</p>
+        `;
+        $("generated-invite-link").value = inviteUrl.toString();
+      }
+
+      footer.innerHTML = `
+        <button id="invite-done-button" class="secondary-button" type="button">Selesai</button>
+        <button id="invite-copy-button" class="primary-button" type="button">Salin link</button>
+      `;
+      $("invite-done-button")?.addEventListener("click", closeProjectForm);
+      $("invite-copy-button")?.addEventListener("click", async () => {
+        const link = $("generated-invite-link")?.value || inviteUrl.toString();
+        try {
+          await navigator.clipboard.writeText(link);
+          showToast("Link undangan berhasil disalin.", "success");
+        } catch (copyError) {
+          window.prompt("Salin link undangan ini:", link);
+        }
+      });
+      showToast("Link undangan berhasil dibuat.", "success");
+    } catch (error) {
+      console.error("Gagal membuat link undangan:", error);
+      showToast("Link undangan gagal dibuat: " + getErrorMessage(error), "error");
+      setButtonLoading(button, false);
+    }
+  });
 }
 
 
@@ -1063,11 +1212,32 @@ $("workspace-switcher")?.addEventListener("click", async () => {
   await loadWorkspaces(false);
 });
 
-$("join-workspace-button")?.addEventListener("click", () => {
-  showToast(
-    "Fitur penerimaan undangan akan disambungkan setelah struktur undangan diperiksa.",
-    "info"
-  );
+$("join-workspace-button")?.addEventListener("click", async () => {
+  const token = $("invite-code")?.value.trim();
+  if (!token) {
+    showToast("Masukkan token undangan atau buka link undangan yang dibagikan.", "info");
+    $("invite-code")?.focus();
+    return;
+  }
+
+  if (!currentUser) {
+    pendingInviteToken = token;
+    localStorage.setItem(INVITE_STORAGE_KEY, token);
+    showScreen("auth-screen");
+    setAuthMode("login");
+    showAuthMessage(
+      "Masuk atau daftar terlebih dahulu. Setelah itu, Project Hub akan memproses undangan dan membuka Dashboard.",
+      "info"
+    );
+    return;
+  }
+
+  try {
+    await completeWorkspaceInvite(token);
+  } catch (error) {
+    console.error("Gagal bergabung menggunakan undangan:", error);
+    showToast("Gagal bergabung: " + getErrorMessage(error), "error");
+  }
 });
 
 /* =========================================
