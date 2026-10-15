@@ -11,16 +11,19 @@
 
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="style.css?v=20261015-refresh-cleanup1">
+  <link rel="stylesheet" href="style.css?v=20261015-meeting-notes1">
 </head>
 
 <body>
   <div id="toast-container" class="toast-container" role="status" aria-live="polite" aria-atomic="false"></div>
+  <main id="startup-screen" class="startup-screen" role="status" aria-live="polite">
+    <div class="startup-mark">PH</div><strong>Project Hub</strong><span>Menyiapkan workspace...</span>
+  </main>
 
   <!-- =====================================
        LOGIN DAN PENDAFTARAN
   ====================================== -->
-  <main id="auth-screen" class="auth-screen">
+  <main id="auth-screen" class="auth-screen hidden">
     <section class="auth-card">
       <div class="brand-mark">PH</div>
 
@@ -263,6 +266,7 @@
         <button data-page="projects" class="nav-item" type="button"><span>▤</span> Proyek</button>
         <button data-page="calendar" class="nav-item" type="button"><span>▦</span> Kalender</button>
         <button data-page="general-notes" class="nav-item" type="button"><span>▧</span> Catatan</button>
+        <button data-page="meeting-notes" class="nav-item" type="button"><span>▤</span> Catatan Meeting</button>
         <button id="sidebar-more-toggle" class="nav-item more-menu-toggle" type="button" aria-expanded="false" aria-controls="sidebar-more-menu"><span>•••</span> Lainnya <span class="more-chevron">⌄</span></button>
         <div id="sidebar-more-menu" class="nav-submenu hidden">
           <button data-page="users" class="nav-item" type="button"><span>♙</span> Anggota</button>
@@ -319,6 +323,7 @@
         <button data-page="projects" type="button">▤ Proyek</button>
         <button data-page="calendar" type="button">▦ Kalender</button>
         <button data-page="general-notes" type="button">▧ Catatan</button>
+        <button data-page="meeting-notes" type="button">▤ Catatan Meeting</button>
         <button id="mobile-more-toggle" type="button" class="more-menu-toggle" aria-expanded="false" aria-controls="mobile-more-menu">••• Lainnya <span class="more-chevron">⌄</span></button>
         <div id="mobile-more-menu" class="nav-submenu mobile-submenu hidden">
           <button data-page="users" type="button">Anggota</button>
@@ -462,6 +467,17 @@
               <p>Catatan umum workspace akan ditampilkan di sini.</p>
             </div>
           </div>
+        </section>
+
+        <!-- CATATAN MEETING -->
+        <section id="page-meeting-notes" class="page hidden">
+          <div class="page-intro">
+            <div><h2>Catatan Meeting</h2><p>Susun notulen, keputusan, jadwal, dan tindak lanjut meeting.</p></div>
+            <button id="add-meeting-note-button" class="primary-button" type="button">+ Buat Notulen</button>
+          </div>
+          <div id="meeting-note-form-container"></div>
+          <div id="meeting-note-detail-container"></div>
+          <div id="meeting-note-list" class="meeting-note-list"><div class="empty-state"><strong>Memuat Catatan Meeting...</strong><p>Mohon tunggu sebentar.</p></div></div>
         </section>
 
         <!-- ANGGOTA WORKSPACE -->
@@ -684,7 +700,7 @@
   </div>
 
   <!-- JAVASCRIPT UTAMA -->
-  <script type="module" src="app.js?v=20261015-refresh-cleanup1"></script>
+  <script type="module" src="app.js?v=20261015-meeting-notes1"></script>
 
   <!-- SERVICE WORKER PWA -->
   <script>

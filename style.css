@@ -4234,3 +4234,56 @@ body {
   .calendar-month-navigation h3 { font-size: 14px; }
   .calendar-legend { gap: 7px; }
 }
+
+/* CATATAN MEETING */
+.startup-screen{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;background:#F8F5F1;color:#4A3329;text-align:center;padding:24px}
+.startup-mark{display:grid;place-items:center;width:54px;height:54px;border-radius:16px;background:#5B4033;color:#fff;font-weight:800;font-size:19px;margin-bottom:5px}
+.startup-screen span{font-size:13px;color:#806A5D}
+.meeting-note-list{display:grid;gap:14px}
+.meeting-note-card{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;padding:21px;background:#fff;border:1px solid #E7DED5;border-radius:16px;box-shadow:0 5px 18px rgba(65,43,31,.035)}
+.meeting-note-card-main{flex:1;min-width:0}
+.meeting-note-card-top{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:9px}
+.meeting-privacy-pill{display:inline-flex;align-items:center;border-radius:999px;padding:4px 9px;font-size:11px;font-weight:700}
+.meeting-privacy-pill.is-private{background:#F1ECE7;color:#6E5B4D}.meeting-privacy-pill.is-shared{background:#E4F0E7;color:#38634C}
+.meeting-note-date,.meeting-note-meta,.meeting-detail-updated{font-size:12px;color:#806A5D}
+.meeting-note-card h3{font-size:18px;line-height:1.4;margin:0 0 7px;color:#35251E;overflow-wrap:anywhere}
+.meeting-note-card-summary{margin:0;color:#6D5B50;line-height:1.6;white-space:pre-line;overflow-wrap:anywhere}
+.meeting-note-meta{display:flex;gap:8px 16px;flex-wrap:wrap;margin-top:13px}
+.meeting-note-card-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:7px;max-width:230px}
+.meeting-note-card-actions .secondary-button{font-size:12px;padding:8px 10px}
+.meeting-danger-button{color:#9B2C2C!important;border-color:#E8C7C7!important}
+.meeting-note-form{padding:24px;margin-bottom:20px}
+.meeting-form-heading,.meeting-section-heading,.meeting-repeat-heading,.meeting-detail-toolbar{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
+.meeting-form-heading{padding-bottom:18px;border-bottom:1px solid #E7DED5;margin-bottom:8px}
+.meeting-form-heading h3,.meeting-detail-toolbar h3{margin:0 0 5px;color:#35251E;font-size:21px}
+.meeting-form-heading p,.meeting-detail-toolbar p{margin:0;color:#806A5D;font-size:13px;line-height:1.5}
+.meeting-form-section{padding:19px 0;border-bottom:1px solid #F0E9E2}
+.meeting-form-section:last-of-type{border-bottom:0}
+.meeting-form-section h4,.meeting-note-detail section h4{font-size:15px;margin:0 0 14px;color:#4A3329}
+.meeting-form-grid{display:grid;grid-template-columns:minmax(0,2fr) minmax(180px,1fr) minmax(150px,.8fr);gap:14px}
+.meeting-note-form .form-group{margin-bottom:12px}.meeting-note-form textarea{min-height:90px;resize:vertical;line-height:1.6}
+.meeting-section-heading{align-items:center;margin-bottom:14px}.meeting-section-heading h4{margin:0}
+.meeting-division-block{padding:16px;border:1px solid #E7DED5;border-radius:12px;background:#FCFAF8;margin-bottom:12px}
+.meeting-repeat-heading{align-items:center;margin-bottom:12px}.meeting-repeat-heading strong{font-size:13px;color:#6D5B50}
+.meeting-action-edit-row{display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:10px;margin:9px 0}
+.meeting-action-edit-row>input[type=text]{width:100%;min-width:0}
+.meeting-action-done{display:flex;align-items:center;gap:6px;white-space:nowrap;font-size:12px;color:#6D5B50}
+.meeting-action-done input,.meeting-editor-option input,.meeting-detail-action input{width:auto}
+.meeting-editor-picker{padding:15px;border-radius:12px;background:#F8F5F1;border:1px solid #E7DED5}
+.meeting-editor-picker>strong{display:block;font-size:13px;color:#4A3329;margin-bottom:4px}
+.meeting-editor-picker>p{font-size:12px;line-height:1.55;color:#806A5D;margin:0 0 12px}
+.meeting-editor-option{display:flex;align-items:center;gap:9px;padding:8px 0;font-size:13px;color:#4A3329;overflow-wrap:anywhere}
+.meeting-editor-option small{color:#806A5D}
+.meeting-form-actions{display:flex;justify-content:flex-end;gap:10px;padding-top:18px}
+.meeting-note-detail{padding:24px;margin-bottom:20px}
+.meeting-detail-toolbar{padding-bottom:18px;border-bottom:1px solid #E7DED5;margin-bottom:18px}
+.meeting-detail-toolbar h3{margin-top:10px}.meeting-detail-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:7px}
+.meeting-note-detail section{margin:20px 0}
+.meeting-note-detail section h4{padding-bottom:7px;border-bottom:1px solid #F0E9E2}
+.meeting-detail-text,.meeting-detail-division p{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.7;color:#4F4037;margin:0}
+.meeting-detail-division{padding:10px 0;border-bottom:1px solid #F0E9E2}.meeting-detail-division strong{display:block;margin-bottom:5px;color:#5B4033}
+.meeting-detail-actions-list{display:grid;gap:9px}.meeting-detail-action{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;background:#FCFAF8;border:1px solid #F0E9E2;border-radius:10px}
+.meeting-detail-action span{line-height:1.55;overflow-wrap:anywhere}.meeting-detail-action span.is-done{text-decoration:line-through;color:#8B8179}
+.meeting-detail-updated{margin:20px 0 0}
+@media(max-width:800px){.meeting-note-card{flex-direction:column;gap:14px}.meeting-note-card-actions{justify-content:flex-start;max-width:none}.meeting-form-grid{grid-template-columns:1fr 1fr}.meeting-form-grid .form-group:first-child{grid-column:1/-1}.meeting-detail-toolbar{flex-direction:column}.meeting-detail-actions{justify-content:flex-start}}
+@media(max-width:520px){.meeting-note-form,.meeting-note-detail{padding:16px}.meeting-form-grid{grid-template-columns:1fr}.meeting-form-grid .form-group:first-child{grid-column:auto}.meeting-form-heading,.meeting-section-heading{align-items:stretch;flex-direction:column}.meeting-action-edit-row{grid-template-columns:minmax(0,1fr) auto}.meeting-action-edit-row .meeting-remove-action{grid-column:2}.meeting-form-actions{flex-direction:column-reverse}.meeting-form-actions button{width:100%}.meeting-note-card-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:100%}.meeting-note-card-actions button{width:100%}}
