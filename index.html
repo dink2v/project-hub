@@ -11,7 +11,7 @@
 
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="style.css?v=20261015-meeting-plaintext1">
+  <link rel="stylesheet" href="style.css?v=20261015-colorful-layout1">
 </head>
 
 <body>
@@ -318,18 +318,30 @@
         </div>
       </header>
 
-      <nav id="mobile-nav" class="mobile-nav hidden" aria-label="Navigasi aplikasi">
-        <button data-page="home" type="button">⌂ Beranda</button>
-        <button data-page="projects" type="button">▤ Proyek</button>
-        <button data-page="calendar" type="button">▦ Kalender</button>
-        <button data-page="general-notes" type="button">▧ Catatan</button>
-        <button data-page="meeting-notes" type="button">▤ Catatan Meeting</button>
-        <button id="mobile-more-toggle" type="button" class="more-menu-toggle" aria-expanded="false" aria-controls="mobile-more-menu">••• Lainnya <span class="more-chevron">⌄</span></button>
-        <div id="mobile-more-menu" class="nav-submenu mobile-submenu hidden">
-          <button data-page="users" type="button">Anggota</button>
-          <button data-page="settings" type="button">Pengaturan</button>
+      <nav id="mobile-nav" class="mobile-nav mobile-bottom-nav" aria-label="Navigasi utama mobile">
+        <button data-page="home" class="mobile-nav-item active" type="button" aria-label="Beranda">
+          <span class="mobile-nav-icon" aria-hidden="true">⌂</span><span>Beranda</span>
+        </button>
+        <button data-page="projects" class="mobile-nav-item" type="button" aria-label="Proyek">
+          <span class="mobile-nav-icon" aria-hidden="true">▤</span><span>Proyek</span>
+        </button>
+        <button data-page="general-notes" class="mobile-nav-item" type="button" aria-label="Catatan Umum">
+          <span class="mobile-nav-icon" aria-hidden="true">▧</span><span>Catatan</span>
+        </button>
+        <button data-page="meeting-notes" class="mobile-nav-item" type="button" aria-label="Catatan Meeting">
+          <span class="mobile-nav-icon" aria-hidden="true">▦</span><span>Meeting</span>
+        </button>
+        <div class="mobile-nav-more-wrap">
+          <button id="mobile-more-toggle" class="mobile-nav-item more-menu-toggle" type="button" aria-expanded="false" aria-controls="mobile-more-menu" aria-label="Menu lainnya">
+            <span class="mobile-nav-icon" aria-hidden="true">•••</span><span>Lainnya</span>
+          </button>
+          <div id="mobile-more-menu" class="nav-submenu mobile-submenu hidden" aria-label="Menu lainnya">
+            <button data-page="calendar" type="button"><span aria-hidden="true">▦</span> Kalender</button>
+            <button data-page="users" type="button"><span aria-hidden="true">♙</span> Anggota</button>
+            <button data-page="settings" type="button"><span aria-hidden="true">⚙</span> Pengaturan</button>
+            <button id="mobile-logout-button" type="button"><span aria-hidden="true">↪</span> Keluar dari akun</button>
+          </div>
         </div>
-        <button id="mobile-logout-button" type="button">Keluar dari akun</button>
       </nav>
 
       <div class="page-content">
@@ -700,7 +712,7 @@
   </div>
 
   <!-- JAVASCRIPT UTAMA -->
-  <script type="module" src="app.js?v=20261015-meeting-plaintext1"></script>
+  <script type="module" src="app.js?v=20261015-colorful-layout1"></script>
 
   <!-- SERVICE WORKER PWA -->
   <script>
