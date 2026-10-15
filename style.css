@@ -4292,7 +4292,7 @@ body {
 /* Mobile-only bottom navigation. Keep the existing desktop design unchanged. */
 .mobile-bottom-nav { display: none !important; }
 @media (max-width: 700px) {
-  #app-shell, .app-shell { display: block !important; min-height: 100vh; }
+  #app-shell:not(.hidden), .app-shell:not(.hidden) { display: block !important; min-height: 100vh; }
   .sidebar { display: none !important; }
   .main-area { width: 100% !important; margin: 0 !important; padding-bottom: calc(78px + env(safe-area-inset-bottom)) !important; }
   #mobile-menu-button { display: none !important; }
