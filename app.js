@@ -556,7 +556,7 @@ async function loadWorkspaces(autoOpenSavedWorkspace = true) {
         const ownerName = String(metadataName || emailName || "Pribadi").trim();
         const workspaceName = ownerName
           .toLocaleLowerCase("id-ID")
-          .split(/\\s+/)
+          .split(/\s+/)
           .map((part) => part ? part.charAt(0).toLocaleUpperCase("id-ID") + part.slice(1) : "")
           .join(" ");
         const personalWorkspaceName = "Workspace " + workspaceName;
