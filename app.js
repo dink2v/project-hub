@@ -1198,24 +1198,38 @@ async function loadMeetingNotes() {
   meetingNotesRows=data||[]; renderMeetingNotesList();
 }
 function renderMeetingNotesList() {
-  const list=$("meeting-note-list"); if(!list)return;
-  if(!meetingNotesRows.length){
-    list.innerHTML='<div class="empty-state meeting-note-empty"><div class="empty-icon" aria-hidden="true">▤</div><strong>Belum ada Catatan Meeting</strong><p>Buat notulen pertama untuk menyimpan pembahasan, keputusan, dan tindak lanjut meeting.</p><button type="button" class="primary-button" id="empty-add-meeting-note">+ Buat Notulen</button></div>';
-    $("empty-add-meeting-note")?.addEventListener("click",()=>renderMeetingNoteForm());return;
+  const list = $("meeting-note-list");
+  if (!list) return;
+  if (!meetingNotesRows.length) {
+    list.innerHTML = '<div class="empty-state meeting-note-empty"><div class="empty-icon" aria-hidden="true">▤</div><strong>Belum ada Catatan Meeting</strong><p>Buat catatan meeting pertama kamu.</p><button type="button" class="primary-button" id="empty-add-meeting-note">+ Buat Catatan</button></div>';
+    $("empty-add-meeting-note")?.addEventListener("click", () => renderMeetingNoteForm());
+    return;
   }
-  list.innerHTML=meetingNotesRows.map(note=>{
-    const canEdit=canEditMeetingNote(note), creator=String(note.created_by)===String(currentUser?.id);
-    const divisions=Array.isArray(note.division_results)?note.division_results.length:0;
-    const actions=Array.isArray(note.action_items)?note.action_items:[];
-    return '<article class="meeting-note-card"><div class="meeting-note-card-main"><div class="meeting-note-card-top"><span class="meeting-privacy-pill '+(note.privacy==="shared"?"is-shared":"is-private")+'">'+escapeHtml(meetingPrivacy(note))+'</span><span class="meeting-note-date">'+escapeHtml(meetingDateLabel(note.meeting_date))+'</span></div><h3>'+escapeHtml(note.title||"Tanpa judul")+'</h3><p class="meeting-note-card-summary">'+escapeHtml((note.discussion||"").slice(0,180)||"Belum ada ringkasan pembahasan.")+((note.discussion||"").length>180?"…":"")+'</p><div class="meeting-note-meta"><span>'+divisions+' bagian hasil</span><span>'+actions.filter(x=>x?.done).length+'/'+actions.length+' tindak lanjut selesai</span><span>Diperbarui '+escapeHtml(formatProjectNoteTimestamp(note.updated_at||note.created_at))+'</span></div></div><div class="meeting-note-card-actions"><button type="button" class="secondary-button" data-meeting-action="view" data-meeting-id="'+escapeHtml(note.id)+'">Lihat</button>'+(canEdit?'<button type="button" class="secondary-button" data-meeting-action="edit" data-meeting-id="'+escapeHtml(note.id)+'">Edit</button>':'')+'<button type="button" class="secondary-button" data-meeting-action="print" data-meeting-id="'+escapeHtml(note.id)+'">Cetak / PDF</button>'+(creator?'<button type="button" class="secondary-button meeting-danger-button" data-meeting-action="delete" data-meeting-id="'+escapeHtml(note.id)+'">Hapus</button>':'')+'</div></article>';
+  list.innerHTML = meetingNotesRows.map(note => {
+    const canEdit = canEditMeetingNote(note), creator = String(note.created_by) === String(currentUser?.id);
+    const body = meetingBodyFromNote(note);
+    return '<article class="meeting-note-card"><div class="meeting-note-card-main"><div class="meeting-note-card-top"><span class="meeting-privacy-pill '+(note.privacy === "shared" ? "is-shared" : "is-private")+'">'+escapeHtml(meetingPrivacy(note))+'</span><span class="meeting-note-date">'+escapeHtml(meetingDateLabel(note.meeting_date))+(note.meeting_time ? " · "+escapeHtml(String(note.meeting_time).slice(0,5)) : "")+'</span></div><h3>'+escapeHtml(note.title || "Tanpa judul")+'</h3><p class="meeting-note-card-summary">'+escapeHtml(body.slice(0,220) || "Belum ada isi catatan.")+(body.length > 220 ? "…" : "")+'</p><div class="meeting-note-meta"><span>Diperbarui '+escapeHtml(formatProjectNoteTimestamp(note.updated_at || note.created_at))+'</span></div></div><div class="meeting-note-card-actions"><button type="button" class="secondary-button" data-meeting-action="view" data-meeting-id="'+escapeHtml(note.id)+'">Lihat</button>'+(canEdit ? '<button type="button" class="secondary-button" data-meeting-action="edit" data-meeting-id="'+escapeHtml(note.id)+'">Edit</button>' : '')+'<button type="button" class="secondary-button" data-meeting-action="print" data-meeting-id="'+escapeHtml(note.id)+'">Cetak / PDF</button>'+(creator ? '<button type="button" class="secondary-button meeting-danger-button" data-meeting-action="delete" data-meeting-id="'+escapeHtml(note.id)+'">Hapus</button>' : '')+'</div></article>';
   }).join("");
-  list.querySelectorAll("[data-meeting-action]").forEach(button=>button.addEventListener("click",async()=>{
-    const note=meetingNotesRows.find(x=>String(x.id)===String(button.dataset.meetingId));if(!note)return;
-    if(button.dataset.meetingAction==="view")renderMeetingNoteDetail(note);
-    if(button.dataset.meetingAction==="edit")await renderMeetingNoteForm(note);
-    if(button.dataset.meetingAction==="print")printMeetingNote(note);
-    if(button.dataset.meetingAction==="delete")await deleteMeetingNote(note);
+  list.querySelectorAll("[data-meeting-action]").forEach(button => button.addEventListener("click", async () => {
+    const note = meetingNotesRows.find(x => String(x.id) === String(button.dataset.meetingId));
+    if (!note) return;
+    if (button.dataset.meetingAction === "view") renderMeetingNoteDetail(note);
+    if (button.dataset.meetingAction === "edit") await renderMeetingNoteForm(note);
+    if (button.dataset.meetingAction === "print") printMeetingNote(note);
+    if (button.dataset.meetingAction === "delete") await deleteMeetingNote(note);
   }));
+}
+function meetingBodyFromNote(note) {
+  const parts = [];
+  if (note?.discussion) parts.push(note.discussion);
+  const divisions = Array.isArray(note?.division_results) ? note.division_results : [];
+  if (divisions.length) parts.push("HASIL PEMBAHASAN PER DIVISI / BAGIAN\n" + divisions.map(x => [x.division, x.content].filter(Boolean).join("\n")).join("\n\n"));
+  if (note?.schedules) parts.push("JADWAL DAN DEADLINE\n" + note.schedules);
+  if (note?.evaluation_plan) parts.push("EVALUASI DAN RENCANA\n" + note.evaluation_plan);
+  if (note?.additional_notes) parts.push("CATATAN TAMBAHAN\n" + note.additional_notes);
+  const actions = Array.isArray(note?.action_items) ? note.action_items : [];
+  if (actions.length) parts.push("TINDAK LANJUT\n" + actions.map(x => (x.done ? "[x] " : "[ ] ") + (x.text || "")).join("\n"));
+  return parts.join("\n\n");
 }
 async function getMeetingWorkspaceMembers(){
   if(!currentWorkspace)return [];
@@ -1237,92 +1251,66 @@ function meetingDivisionBlock(item={}) {
 function meetingActionBlock(item={}) {
   return '<div class="meeting-action-edit-row"><input class="meeting-action-text" type="text" maxlength="500" value="'+escapeHtml(item.text||"")+'" placeholder="Tindak lanjut yang harus dilakukan"><label class="meeting-action-done"><input class="meeting-action-done-input" type="checkbox" '+(item.done?"checked":"")+'> Selesai</label><button type="button" class="text-button meeting-remove-action" aria-label="Hapus tindak lanjut">Hapus</button></div>';
 }
-async function renderMeetingNoteForm(note=null) {
-  const container=$("meeting-note-form-container"), detail=$("meeting-note-detail-container");
-  if(!container||!currentUser||!currentWorkspace)return;
-  if(note&&!canEditMeetingNote(note)){showToast("Kamu hanya memiliki akses lihat untuk notulen ini.","error");return;}
-  editingMeetingNoteId=note?.id||null;if(detail)detail.replaceChildren();
-  const members=await getMeetingWorkspaceMembers();
-  const divisions=Array.isArray(note?.division_results)&&note.division_results.length?note.division_results:[{division:"",content:""}];
-  const actions=Array.isArray(note?.action_items)&&note.action_items.length?note.action_items:[{text:"",done:false}];
-  container.innerHTML='<form id="meeting-note-form" class="content-card meeting-note-form"><div class="meeting-form-heading"><div><h3>'+(note?"Edit Notulen Meeting":"Notulen Meeting Baru")+'</h3><p>Isi bagian-bagian yang relevan dengan hasil meeting.</p></div><button type="button" class="text-button" id="cancel-meeting-note">Batal</button></div>'+
-  '<section class="meeting-form-section"><h4>01 · Informasi Meeting</h4><div class="meeting-form-grid"><div class="form-group"><label for="meeting-note-title">Judul Meeting *</label><input id="meeting-note-title" maxlength="180" required value="'+escapeHtml(note?.title||"")+'" placeholder="Contoh: NOTULEN MEETING OCCHIO X MCC X MGS X CYBER"></div><div class="form-group"><label for="meeting-note-date">Hari / Tanggal *</label><input id="meeting-note-date" type="date" required value="'+escapeHtml(note?.meeting_date||"")+'"></div><div class="form-group"><label for="meeting-note-time">Waktu Meeting (opsional)</label><input id="meeting-note-time" type="time" value="'+escapeHtml(String(note?.meeting_time||"").slice(0,5))+'"></div></div></section>'+
-  '<section class="meeting-form-section"><h4>02 · Pembahasan</h4><div class="form-group"><label for="meeting-note-discussion">Pokok pembahasan</label><textarea id="meeting-note-discussion" rows="5" maxlength="20000" placeholder="Tuliskan agenda dan pokok pembahasan meeting...">'+escapeHtml(note?.discussion||"")+'</textarea></div></section>'+
-  '<section class="meeting-form-section"><div class="meeting-section-heading"><h4>03 · Hasil Pembahasan per Divisi / Bagian</h4><button type="button" class="secondary-button" id="add-meeting-division">+ Tambah Bagian</button></div><div id="meeting-divisions-container">'+divisions.map(meetingDivisionBlock).join("")+'</div></section>'+
-  '<section class="meeting-form-section"><h4>04 · Jadwal dan Deadline</h4><div class="form-group"><label for="meeting-note-schedules">Jadwal, penanggung jawab, dan deadline</label><textarea id="meeting-note-schedules" rows="4" maxlength="12000" placeholder="Contoh: Upload Content — PIC, tanggal mulai, dan deadline...">'+escapeHtml(note?.schedules||"")+'</textarea></div></section>'+
-  '<section class="meeting-form-section"><h4>05 · Evaluasi dan Rencana</h4><div class="form-group"><label for="meeting-note-evaluation">Evaluasi dan rencana berikutnya</label><textarea id="meeting-note-evaluation" rows="4" maxlength="12000" placeholder="Catatan evaluasi, kendala, dan rencana berikutnya...">'+escapeHtml(note?.evaluation_plan||"")+'</textarea></div></section>'+
-  '<section class="meeting-form-section"><h4>06 · Catatan Tambahan</h4><div class="form-group"><label for="meeting-note-additional">Catatan</label><textarea id="meeting-note-additional" rows="3" maxlength="12000" placeholder="Informasi tambahan (opsional)...">'+escapeHtml(note?.additional_notes||"")+'</textarea></div></section>'+
-  '<section class="meeting-form-section"><div class="meeting-section-heading"><h4>07 · Tindak Lanjut</h4><button type="button" class="secondary-button" id="add-meeting-action">+ Tambah Tindak Lanjut</button></div><p class="muted small">Checklist ini berdiri sendiri dan tidak otomatis mengubah status Fitur Proyek.</p><div id="meeting-actions-container">'+actions.map(meetingActionBlock).join("")+'</div></section>'+
-  '<section class="meeting-form-section"><h4>08 · Privasi dan Hak Edit</h4><div class="form-group"><label for="meeting-note-privacy">Akses notulen</label><select id="meeting-note-privacy"><option value="private" '+(note?.privacy!=="shared"?"selected":"")+'>Pribadi — hanya kamu yang dapat melihat</option><option value="shared" '+(note?.privacy==="shared"?"selected":"")+'>Dibagikan — anggota workspace dapat melihat</option></select></div><div id="meeting-editor-picker" class="meeting-editor-picker '+(note?.privacy==="shared"?"":"hidden")+'"><strong>Anggota yang boleh mengedit</strong><p>Anggota workspace lainnya tetap hanya dapat melihat notulen. Pembuat notulen selalu bisa mengedit.</p>'+(members.length?meetingEditorOptions(members,note?.editor_ids||[]):'<p class="muted small">Daftar anggota belum tersedia.</p>')+'</div></section>'+
-  '<p id="meeting-note-form-error" class="form-error" hidden></p><div class="meeting-form-actions"><button type="button" class="secondary-button" id="cancel-meeting-note-bottom">Batal</button><button type="submit" class="primary-button" id="save-meeting-note">'+(note?"Simpan Perubahan":"Simpan Notulen")+'</button></div></form>';
-  $("cancel-meeting-note")?.addEventListener("click",closeMeetingNoteForm);
-  $("cancel-meeting-note-bottom")?.addEventListener("click",closeMeetingNoteForm);
-  $("meeting-note-form")?.addEventListener("submit",saveMeetingNote);
-  $("meeting-note-privacy")?.addEventListener("change",e=>$("meeting-editor-picker")?.classList.toggle("hidden",e.target.value!=="shared"));
-  $("add-meeting-division")?.addEventListener("click",()=>{$("meeting-divisions-container")?.insertAdjacentHTML("beforeend",meetingDivisionBlock());bindMeetingRepeatControls();});
-  $("add-meeting-action")?.addEventListener("click",()=>{$("meeting-actions-container")?.insertAdjacentHTML("beforeend",meetingActionBlock());bindMeetingRepeatControls();});
-  bindMeetingRepeatControls();container.scrollIntoView({behavior:"smooth",block:"start"});
-}
-function bindMeetingRepeatControls(){
-  $("meeting-divisions-container")?.querySelectorAll(".meeting-remove-division").forEach(button=>button.onclick=()=>{
-    const blocks=$("meeting-divisions-container")?.querySelectorAll(".meeting-division-block");
-    if(blocks?.length>1)button.closest(".meeting-division-block")?.remove();
-    else{const b=button.closest(".meeting-division-block");if(b){b.querySelector(".meeting-division-name").value="";b.querySelector(".meeting-division-content").value="";}}
-  });
-  $("meeting-actions-container")?.querySelectorAll(".meeting-remove-action").forEach(button=>button.onclick=()=>{
-    const blocks=$("meeting-actions-container")?.querySelectorAll(".meeting-action-edit-row");
-    if(blocks?.length>1)button.closest(".meeting-action-edit-row")?.remove();
-    else{const b=button.closest(".meeting-action-edit-row");if(b){b.querySelector(".meeting-action-text").value="";b.querySelector(".meeting-action-done-input").checked=false;}}
-  });
+async function renderMeetingNoteForm(note = null) {
+  const container = $("meeting-note-form-container"), detail = $("meeting-note-detail-container");
+  if (!container || !currentUser || !currentWorkspace) return;
+  if (note && !canEditMeetingNote(note)) { showToast("Kamu hanya memiliki akses lihat untuk catatan ini.", "error"); return; }
+  editingMeetingNoteId = note?.id || null;
+  if (detail) detail.replaceChildren();
+  const members = await getMeetingWorkspaceMembers();
+  const body = meetingBodyFromNote(note);
+  container.innerHTML = '<form id="meeting-note-form" class="content-card meeting-note-form"><div class="meeting-form-heading"><div><h3>'+(note ? "Edit Catatan Meeting" : "Catatan Meeting Baru")+'</h3><p>Tulis semua isi meeting dalam satu kolom teks. Kamu bisa memakai judul bagian seperti Pembahasan, Hasil, Jadwal, Evaluasi, dan Tindak Lanjut.</p></div><button type="button" class="text-button" id="cancel-meeting-note">Batal</button></div>'+
+    '<section class="meeting-form-section"><div class="meeting-form-grid"><div class="form-group"><label for="meeting-note-title">Judul Meeting *</label><input id="meeting-note-title" maxlength="180" required value="'+escapeHtml(note?.title || "")+'" placeholder="Contoh: Notulen Meeting Mingguan"></div><div class="form-group"><label for="meeting-note-date">Tanggal *</label><input id="meeting-note-date" type="date" required value="'+escapeHtml(note?.meeting_date || "")+'"></div><div class="form-group"><label for="meeting-note-time">Waktu (opsional)</label><input id="meeting-note-time" type="time" value="'+escapeHtml(String(note?.meeting_time || "").slice(0,5))+'"></div></div></section>'+
+    '<section class="meeting-form-section"><div class="form-group"><label for="meeting-note-discussion">Isi Catatan Meeting</label><textarea id="meeting-note-discussion" rows="16" maxlength="50000" placeholder="Pembahasan:\n- ...\n\nHasil Meeting:\n- ...\n\nJadwal / Deadline:\n- ...\n\nEvaluasi & Rencana:\n- ...\n\nCatatan Tambahan:\n- ...\n\nChecklist Tindak Lanjut:\n- [ ] ...">'+escapeHtml(body)+'</textarea></div></section>'+
+    '<section class="meeting-form-section"><h4>Privasi dan Hak Edit</h4><div class="form-group"><label for="meeting-note-privacy">Akses catatan</label><select id="meeting-note-privacy"><option value="private" '+(note?.privacy !== "shared" ? "selected" : '')+'>Pribadi — hanya kamu yang dapat melihat</option><option value="shared" '+(note?.privacy === "shared" ? "selected" : '')+'>Dibagikan — anggota workspace dapat melihat</option></select></div><div id="meeting-editor-picker" class="meeting-editor-picker '+(note?.privacy === "shared" ? "" : "hidden")+'"><strong>Anggota yang boleh mengedit</strong><p>Anggota lain hanya dapat melihat catatan. Pembuat catatan selalu bisa mengedit.</p>'+(members.length ? meetingEditorOptions(members, note?.editor_ids || []) : '<p class="muted small">Daftar anggota belum tersedia.</p>')+'</div></section>'+
+    '<p id="meeting-note-form-error" class="form-error" hidden></p><div class="meeting-form-actions"><button type="button" class="secondary-button" id="cancel-meeting-note-bottom">Batal</button><button type="submit" class="primary-button" id="save-meeting-note">'+(note ? "Simpan Perubahan" : "Simpan Catatan")+'</button></div></form>';
+  $("cancel-meeting-note")?.addEventListener("click", closeMeetingNoteForm);
+  $("cancel-meeting-note-bottom")?.addEventListener("click", closeMeetingNoteForm);
+  $("meeting-note-form")?.addEventListener("submit", saveMeetingNote);
+  $("meeting-note-privacy")?.addEventListener("change", e => $("meeting-editor-picker")?.classList.toggle("hidden", e.target.value !== "shared"));
+  container.scrollIntoView({behavior:"smooth", block:"start"});
 }
 function closeMeetingNoteForm(){editingMeetingNoteId=null;$("meeting-note-form-container")?.replaceChildren();}
-async function saveMeetingNote(event){
-  event.preventDefault();const button=$("save-meeting-note"),errorBox=$("meeting-note-form-error");
-  const title=$("meeting-note-title")?.value.trim(),date=$("meeting-note-date")?.value;
-  if(!currentUser||!currentWorkspace){showToast("Buka workspace terlebih dahulu untuk menyimpan notulen.","error");return;}
-  if(!title||!date){if(errorBox){errorBox.textContent="Judul Meeting dan Hari/Tanggal wajib diisi.";errorBox.hidden=false;}return;}
-  const divisions=Array.from($("meeting-divisions-container")?.querySelectorAll(".meeting-division-block")||[]).map(b=>({division:b.querySelector(".meeting-division-name")?.value.trim()||"",content:b.querySelector(".meeting-division-content")?.value.trim()||""})).filter(x=>x.division||x.content);
-  const actions=Array.from($("meeting-actions-container")?.querySelectorAll(".meeting-action-edit-row")||[]).map(b=>({text:b.querySelector(".meeting-action-text")?.value.trim()||"",done:Boolean(b.querySelector(".meeting-action-done-input")?.checked)})).filter(x=>x.text);
-  const privacy=$("meeting-note-privacy")?.value==="shared"?"shared":"private";
-  const editorIds=privacy==="shared"?Array.from(document.querySelectorAll('input[name="meeting-editor-id"]:checked:not(:disabled)')).map(x=>x.value):[];
-  const payload={workspace_id:currentWorkspace.id,title,meeting_date:date,meeting_time:$("meeting-note-time")?.value||null,discussion:$("meeting-note-discussion")?.value.trim()||"",division_results:divisions,schedules:$("meeting-note-schedules")?.value.trim()||"",evaluation_plan:$("meeting-note-evaluation")?.value.trim()||"",additional_notes:$("meeting-note-additional")?.value.trim()||"",action_items:actions,privacy,editor_ids:editorIds,updated_at:new Date().toISOString()};
-  if(button){button.disabled=true;button.textContent="Menyimpan...";}
-  let result;
-  if(editingMeetingNoteId)result=await supabase.from("meeting_notes").update(payload).eq("id",editingMeetingNoteId).eq("workspace_id",currentWorkspace.id);
-  else result=await supabase.from("meeting_notes").insert({...payload,created_by:currentUser.id});
-  if(result.error){
-    console.error("Catatan Meeting gagal disimpan:",result.error);
-    if(errorBox){errorBox.textContent=/meeting_notes|schema cache|relation/i.test(result.error.message||"")?"Tabel meeting_notes belum tersedia. Jalankan SQL setup Catatan Meeting di Supabase terlebih dahulu.":getErrorMessage(result.error);errorBox.hidden=false;}
-    if(button){button.disabled=false;button.textContent=editingMeetingNoteId?"Simpan Perubahan":"Simpan Notulen";}return;
+async function saveMeetingNote(event) {
+  event.preventDefault();
+  const button = $("save-meeting-note"), errorBox = $("meeting-note-form-error");
+  const title = $("meeting-note-title")?.value.trim(), date = $("meeting-note-date")?.value;
+  if (!currentUser || !currentWorkspace) { showToast("Buka workspace terlebih dahulu untuk menyimpan catatan.", "error"); return; }
+  if (!title || !date) { if (errorBox) { errorBox.textContent = "Judul Meeting dan tanggal wajib diisi."; errorBox.hidden = false; } return; }
+  const privacy = $("meeting-note-privacy")?.value === "shared" ? "shared" : "private";
+  const editorIds = privacy === "shared" ? Array.from(document.querySelectorAll('input[name="meeting-editor-id"]:checked:not(:disabled)')).map(x => x.value) : [];
+  const payload = {workspace_id:currentWorkspace.id,title,meeting_date:date,meeting_time:$("meeting-note-time")?.value||null,discussion:$("meeting-note-discussion")?.value.trim()||"",division_results:[],schedules:"",evaluation_plan:"",additional_notes:"",action_items:[],privacy,editor_ids:editorIds,updated_at:new Date().toISOString()};
+  if (button) { button.disabled = true; button.textContent = "Menyimpan..."; }
+  try {
+    const result = editingMeetingNoteId
+      ? await supabase.from("meeting_notes").update(payload).eq("id", editingMeetingNoteId).eq("workspace_id", currentWorkspace.id)
+      : await supabase.from("meeting_notes").insert({...payload, created_by:currentUser.id});
+    if (result.error) throw result.error;
+    closeMeetingNoteForm();
+    showToast("Catatan meeting berhasil disimpan.", "success");
+    await loadMeetingNotes();
+  } catch (error) {
+    console.error("Catatan Meeting gagal disimpan:", error);
+    if (errorBox) { errorBox.textContent = /meeting_notes|schema cache|relation/i.test(error.message || "") ? "Tabel meeting_notes belum tersedia. Pastikan SQL setup Catatan Meeting sudah dijalankan." : getErrorMessage(error); errorBox.hidden = false; }
+    if (button) { button.disabled = false; button.textContent = editingMeetingNoteId ? "Simpan Perubahan" : "Simpan Catatan"; }
   }
-  closeMeetingNoteForm();showToast("Notulen meeting berhasil disimpan.","success");await loadMeetingNotes();
 }
-function renderMeetingNoteDetail(note){
-  const box=$("meeting-note-detail-container");if(!box)return;$("meeting-note-form-container")?.replaceChildren();
-  const divisions=Array.isArray(note.division_results)?note.division_results:[],actions=Array.isArray(note.action_items)?note.action_items:[],canEdit=canEditMeetingNote(note);
-  const textSection=(title,content)=>content?'<section><h4>'+escapeHtml(title)+'</h4><p class="meeting-detail-text">'+escapeHtml(content).replace(/\n/g,"<br>")+'</p></section>':"";
-  box.innerHTML='<article class="content-card meeting-note-detail"><div class="meeting-detail-toolbar"><div><span class="meeting-privacy-pill '+(note.privacy==="shared"?"is-shared":"is-private")+'">'+escapeHtml(meetingPrivacy(note))+'</span><h3>'+escapeHtml(note.title||"Tanpa judul")+'</h3><p>'+escapeHtml(meetingDateLabel(note.meeting_date))+(note.meeting_time?" · "+escapeHtml(String(note.meeting_time).slice(0,5)):"")+'</p></div><div class="meeting-detail-actions">'+(canEdit?'<button type="button" class="secondary-button" id="meeting-detail-edit">Edit</button>':'')+'<button type="button" class="secondary-button" id="meeting-detail-print">Cetak / PDF</button><button type="button" class="text-button" id="meeting-detail-close">Tutup</button></div></div>'+
-  textSection("Pembahasan",note.discussion)+'<section><h4>Hasil Pembahasan per Divisi / Bagian</h4>'+(divisions.length?divisions.map(x=>'<div class="meeting-detail-division"><strong>'+escapeHtml(x.division||"Bagian")+'</strong><p>'+escapeHtml(x.content||"Belum ada detail.").replace(/\n/g,"<br>")+'</p></div>').join(""):'<p class="muted">Belum ada hasil pembahasan.</p>')+'</section>'+
-  textSection("Jadwal dan Deadline",note.schedules)+textSection("Evaluasi dan Rencana",note.evaluation_plan)+textSection("Catatan Tambahan",note.additional_notes)+
-  '<section><h4>Tindak Lanjut</h4>'+(actions.length?'<div class="meeting-detail-actions-list">'+actions.map((x,i)=>'<label class="meeting-detail-action"><input type="checkbox" data-meeting-check-action="'+i+'" '+(x.done?"checked":"")+(canEdit?"":" disabled")+'><span class="'+(x.done?"is-done":"")+'">'+escapeHtml(x.text||"")+'</span></label>').join("")+'</div>':'<p class="muted">Belum ada tindak lanjut.</p>')+'</section><p class="meeting-detail-updated">Terakhir diperbarui '+escapeHtml(formatProjectNoteTimestamp(note.updated_at||note.created_at))+'</p></article>';
-  $("meeting-detail-close")?.addEventListener("click",()=>box.replaceChildren());
-  $("meeting-detail-edit")?.addEventListener("click",()=>renderMeetingNoteForm(note));
-  $("meeting-detail-print")?.addEventListener("click",()=>printMeetingNote(note));
-  box.querySelectorAll("[data-meeting-check-action]").forEach(input=>input.addEventListener("change",async()=>{
-    if(!canEditMeetingNote(note))return;const i=Number(input.dataset.meetingCheckAction),next=actions.map((x,j)=>j===i?{...x,done:input.checked}:x);input.disabled=true;
-    const {error}=await supabase.from("meeting_notes").update({action_items:next,updated_at:new Date().toISOString()}).eq("id",note.id).eq("workspace_id",currentWorkspace.id);
-    if(error){input.checked=!input.checked;input.disabled=false;showToast("Checklist gagal diperbarui: "+getErrorMessage(error),"error");return;}
-    note.action_items=next;note.updated_at=new Date().toISOString();showToast("Tindak lanjut diperbarui.","success");await loadMeetingNotes();renderMeetingNoteDetail(note);
-  }));
+function renderMeetingNoteDetail(note) {
+  const box = $("meeting-note-detail-container");
+  if (!box) return;
+  $("meeting-note-form-container")?.replaceChildren();
+  const canEdit = canEditMeetingNote(note), body = meetingBodyFromNote(note);
+  box.innerHTML = '<article class="content-card meeting-note-detail"><div class="meeting-detail-toolbar"><div><span class="meeting-privacy-pill '+(note.privacy === "shared" ? "is-shared" : "is-private")+'">'+escapeHtml(meetingPrivacy(note))+'</span><h3>'+escapeHtml(note.title || "Tanpa judul")+'</h3><p>'+escapeHtml(meetingDateLabel(note.meeting_date))+(note.meeting_time ? " · "+escapeHtml(String(note.meeting_time).slice(0,5)) : "")+'</p></div><div class="meeting-detail-actions">'+(canEdit ? '<button type="button" class="secondary-button" id="meeting-detail-edit">Edit</button>' : '')+'<button type="button" class="secondary-button" id="meeting-detail-print">Cetak / PDF</button><button type="button" class="text-button" id="meeting-detail-close">Tutup</button></div></div><section><h4>Isi Catatan Meeting</h4><p class="meeting-detail-text">'+escapeHtml(body || "Belum ada isi catatan.")+'</p></section><p class="meeting-detail-updated">Terakhir diperbarui '+escapeHtml(formatProjectNoteTimestamp(note.updated_at || note.created_at))+'</p></article>';
+  $("meeting-detail-close")?.addEventListener("click", () => box.replaceChildren());
+  $("meeting-detail-edit")?.addEventListener("click", () => renderMeetingNoteForm(note));
+  $("meeting-detail-print")?.addEventListener("click", () => printMeetingNote(note));
 }
-function printMeetingNote(note){
-  const win=window.open("","_blank");if(!win){showToast("Jendela cetak diblokir browser. Izinkan pop-up lalu coba lagi.","error");return;}
-  const divisions=Array.isArray(note.division_results)?note.division_results:[],actions=Array.isArray(note.action_items)?note.action_items:[];
-  const section=(title,content)=>content?'<section><h2>'+escapeHtml(title)+'</h2><div>'+escapeHtml(content).replace(/\n/g,"<br>")+'</div></section>':"";
-  const doc='<!doctype html><html lang="id"><head><meta charset="utf-8"><title>'+escapeHtml(note.title||"Notulen Meeting")+'</title><style>body{font:14px/1.65 Arial,sans-serif;color:#222;max-width:900px;margin:36px auto;padding:0 24px}h1{font-size:24px;margin:0 0 8px}h2{font-size:16px;border-bottom:1px solid #ddd;padding-bottom:5px;margin:24px 0 8px}h3{font-size:15px;margin:14px 0 4px}.meta{color:#666;margin-bottom:24px}.division{margin:12px 0;padding:0 0 12px;border-bottom:1px solid #eee}.item{margin:6px 0}@media print{body{margin:0 auto;padding:0 10mm}}</style></head><body><h1>'+escapeHtml(note.title||"Notulen Meeting")+'</h1><div class="meta">'+escapeHtml(meetingDateLabel(note.meeting_date))+(note.meeting_time?" · "+escapeHtml(String(note.meeting_time).slice(0,5)):"")+'</div>'+
-  section("Pembahasan",note.discussion)+'<section><h2>Hasil Pembahasan per Divisi / Bagian</h2>'+(divisions.length?divisions.map(x=>'<div class="division"><h3>'+escapeHtml(x.division||"Bagian")+'</h3><div>'+escapeHtml(x.content||"").replace(/\n/g,"<br>")+'</div></div>').join(""):'<p>Belum ada hasil pembahasan.</p>')+'</section>'+
-  section("Jadwal dan Deadline",note.schedules)+section("Evaluasi dan Rencana",note.evaluation_plan)+section("Catatan Tambahan",note.additional_notes)+'<section><h2>Tindak Lanjut</h2>'+(actions.length?actions.map(x=>'<div class="item">'+(x.done?"☑":"☐")+' '+escapeHtml(x.text||"")+'</div>').join(""):'<p>Belum ada tindak lanjut.</p>')+'</section><script>window.addEventListener("load",()=>window.print())<\/script></body></html>';
-  win.document.open();win.document.write(doc);win.document.close();
+function printMeetingNote(note) {
+  const win = window.open("", "_blank");
+  if (!win) { showToast("Jendela cetak diblokir browser. Izinkan pop-up lalu coba lagi.", "error"); return; }
+  const body = meetingBodyFromNote(note);
+  const doc = '<!doctype html><html lang="id"><head><meta charset="utf-8"><title>'+escapeHtml(note.title || "Catatan Meeting")+'</title><style>body{font:14px/1.7 Arial,sans-serif;color:#222;max-width:900px;margin:36px auto;padding:0 24px}h1{font-size:24px}.meta{color:#666;margin-bottom:24px;white-space:pre-wrap}.content{white-space:pre-wrap;overflow-wrap:anywhere}@media print{body{margin:0 auto;padding:0 10mm}}</style></head><body><h1>'+escapeHtml(note.title || "Catatan Meeting")+'</h1><div class="meta">'+escapeHtml(meetingDateLabel(note.meeting_date))+(note.meeting_time ? " · "+escapeHtml(String(note.meeting_time).slice(0,5)) : "")+'</div><div class="content">'+escapeHtml(body || "Belum ada isi catatan.")+'</div><script>window.addEventListener("load",()=>window.print())<\/script></body></html>';
+  win.document.open(); win.document.write(doc); win.document.close();
 }
 async function deleteMeetingNote(note){
   if(String(note.created_by)!==String(currentUser?.id)){showToast("Hanya pembuat notulen yang dapat menghapusnya.","error");return;}
