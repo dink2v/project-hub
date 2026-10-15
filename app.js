@@ -1366,8 +1366,8 @@ async function navigateTo(page) {
   const mobileMoreMenu = $("mobile-more-menu");
   if (mobileMoreMenu) mobileMoreMenu.classList.toggle("hidden", !isSecondaryPage);
 
-  const mobileNav = $("mobile-nav");
-  if (mobileNav) mobileNav.classList.add("hidden");
+  // Navigasi bawah mobile tetap terlihat saat berpindah halaman.
+  $("mobile-nav")?.classList.remove("hidden");
   $("mobile-menu-button")?.setAttribute("aria-expanded", "false");
 
   const titles = {
