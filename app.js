@@ -535,6 +535,69 @@ async function loadWorkspaces(autoOpenSavedWorkspace = true) {
     if (error) throw error;
 
     if (!memberships || memberships.length === 0) {
+      // Pengguna baru langsung mendapatkan workspace pertamanya setelah login.
+      // Undangan diproses lebih dahulu di afterLogin(), jadi tidak tertimpa alur ini.
+      if (autoOpenSavedWorkspace) {
+        list.innerHTML = `
+          <div class="empty-state">
+            <strong>Menyiapkan ruang kerja kamu...</strong>
+            <p>Project Hub sedang membuat dashboard pribadi.</p>
+          </div>
+        `;
+        showScreen("workspace-screen");
+
+        const metadataName = currentUser.user_metadata?.full_name
+          || currentUser.user_metadata?.name
+          || currentUser.user_metadata?.display_name
+          || "";
+        const emailName = (currentUser.email || "").split("@")[0]
+          .replace(/[._-]+/g, " ")
+          .trim();
+        const ownerName = String(metadataName || emailName || "Pribadi").trim();
+        const workspaceName = ownerName
+          .toLocaleLowerCase("id-ID")
+          .split(/\\s+/)
+          .map((part) => part ? part.charAt(0).toLocaleUpperCase("id-ID") + part.slice(1) : "")
+          .join(" ");
+        const personalWorkspaceName = "Workspace " + workspaceName;
+
+        try {
+          const { data: created, error: createError } = await supabase.rpc(
+            "create_workspace",
+            { p_name: personalWorkspaceName }
+          );
+          if (createError) throw createError;
+
+          const createdWorkspace = Array.isArray(created) ? created[0] : created;
+          if (!createdWorkspace?.id) {
+            throw new Error("Fungsi create_workspace tidak mengembalikan ID workspace.");
+          }
+
+          localStorage.setItem(LAST_WORKSPACE_STORAGE_KEY, String(createdWorkspace.id));
+          await openWorkspace({
+            ...createdWorkspace,
+            name: createdWorkspace.name || personalWorkspaceName,
+            role: "Owner"
+          });
+          showToast("Dashboard pribadi kamu siap digunakan.", "success");
+          return;
+        } catch (createError) {
+          console.error("Pembuatan workspace otomatis gagal:", createError);
+          list.innerHTML = `
+            <div class="empty-state">
+              <strong>Dashboard belum berhasil disiapkan</strong>
+              <p id="personal-workspace-error"></p>
+              <p>Kamu masih bisa membuat workspace secara manual di bawah ini.</p>
+            </div>
+          `;
+          const errorElement = $("personal-workspace-error");
+          if (errorElement) {
+            errorElement.textContent = getErrorMessage(createError);
+          }
+          return;
+        }
+      }
+
       list.innerHTML = `
         <div class="empty-state">
           <div class="empty-icon">▤</div>
@@ -542,10 +605,7 @@ async function loadWorkspaces(autoOpenSavedWorkspace = true) {
           <p>Buat workspace baru atau terima undangan untuk mulai.</p>
         </div>
       `;
-
-      if (autoOpenSavedWorkspace) {
-        showScreen("workspace-screen");
-      }
+      showScreen("workspace-screen");
       return;
     }
 
