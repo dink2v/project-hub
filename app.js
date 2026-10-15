@@ -245,13 +245,13 @@ async function handleAuthSubmit(event) {
 
       if (error) throw error;
 
-      if (data.session) {
+      if (data.session && data.user) {
         currentUser = data.user;
-        showToast("Pendaftaran berhasil.", "success");
+        showToast("Pendaftaran berhasil. Menyiapkan Dashboard kamu...", "success");
         await afterLogin();
       } else {
         showAuthMessage(
-          "Pendaftaran berhasil. Periksa email untuk verifikasi sebelum masuk.",
+          "Pendaftaran berhasil. Verifikasi email kamu terlebih dahulu. Setelah verifikasi dan login, Project Hub akan menyiapkan Dashboard pribadi secara otomatis.",
           "success"
         );
       }
@@ -264,7 +264,7 @@ async function handleAuthSubmit(event) {
       if (error) throw error;
 
       currentUser = data.user;
-      showToast("Login berhasil.", "success");
+      showToast("Login berhasil. Membuka Dashboard...", "success");
       await afterLogin();
     }
   } catch (error) {
@@ -274,7 +274,6 @@ async function handleAuthSubmit(event) {
     setButtonLoading(button, false);
   }
 }
-
 /* =========================================
    LUPA PASSWORD
 ========================================= */
