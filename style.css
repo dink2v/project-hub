@@ -4367,3 +4367,15 @@ body {
   .mobile-submenu button:hover,
   .mobile-submenu button:focus-visible { background: #f3f4f6; }
 }
+
+
+/* Mobile dashboard layout: keep the page heading at the top and navigation only at the bottom. */
+@media (max-width: 700px) {
+  .topbar {
+    position: relative !important;
+    top: auto !important;
+  }
+  .topbar .user-profile-info {
+    display: none !important;
+  }
+}
