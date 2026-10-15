@@ -868,7 +868,8 @@ function handleInviteButtonClick() {
         throw new Error("Supabase tidak mengembalikan token undangan.");
       }
 
-      const inviteUrl = new URL(window.location.href);
+      // Gunakan URL resmi GitHub Pages agar link undangan tidak mengikuti domain WordPress atau domain tempat admin membuka aplikasi.
+      const inviteUrl = new URL("https://dink2v.github.io/project-hub/");
       inviteUrl.search = "";
       inviteUrl.hash = "";
       inviteUrl.searchParams.set("invite", invite.token);
